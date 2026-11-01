@@ -1,0 +1,1215 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Zahlenohr</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: one "listening station" card with a departure-board readout as its centrepiece; settings, progress and log sit in a side rail (stacked below on phones). */
+:root {
+  --paper: #ECEFF3;
+  --surface: #FFFFFF;
+  --ink: #152036;
+  --muted: #59647A;
+  --line: #D3D9E3;
+  --signal: #F2B705;
+  --signal-ink: #1E1600;
+  --mark: #FCE7A3;
+  --ok: #1B8049;
+  --ok-soft: #DDF2E5;
+  --bad: #BF3328;
+  --bad-soft: #FBE4E1;
+  --board: #111A2C;
+  --tile: #1C2842;
+  --tile-fg: #FFD866;
+  --tile-dim: #3A4A6B;
+  --tile-line: #0A101C;
+  --board-label: #8D9BB9;
+
+  --f-display: "Barlow Condensed", "Arial Narrow", "PingFang SC", "Noto Sans SC", sans-serif;
+  --f-body: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --f-zh: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0C111C; --surface: #151C2B; --ink: #E7EBF3; --muted: #98A2B7; --line: #283247;
+    --signal: #F5C02E; --signal-ink: #1E1600; --mark: #4A3D10;
+    --ok: #46C784; --ok-soft: #16342A; --bad: #FF7468; --bad-soft: #3B1D1B;
+    --board: #070B13; --tile: #131C2E; --tile-fg: #FFD866; --tile-dim: #2A3754; --tile-line: #03060B; --board-label: #7887A6;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0C111C; --surface: #151C2B; --ink: #E7EBF3; --muted: #98A2B7; --line: #283247;
+  --signal: #F5C02E; --signal-ink: #1E1600; --mark: #4A3D10;
+  --ok: #46C784; --ok-soft: #16342A; --bad: #FF7468; --bad-soft: #3B1D1B;
+  --board: #070B13; --tile: #131C2E; --tile-fg: #FFD866; --tile-dim: #2A3754; --tile-line: #03060B; --board-label: #7887A6;
+  color-scheme: dark;
+}
+
+body { margin: 0; }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 16px;
+  line-height: 1.5;
+}
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--signal); outline-offset: 2px; }
+
+.app {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding-block: 20px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid;
+  gap: 18px;
+}
+
+.zh { font-family: var(--f-zh); font-size: .82em; color: var(--muted); font-weight: 400; }
+body.nozh .zh { display: none !important; }
+
+/* header */
+.top { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 20px; }
+.brand h1 {
+  margin: 0;
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: clamp(34px, 6vw, 46px);
+  line-height: 1;
+  letter-spacing: -.01em;
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+}
+.brand h1 .zh { font-size: 17px; letter-spacing: .04em; }
+.brand p { margin: 6px 0 0; color: var(--muted); max-width: 60ch; }
+.scores { display: flex; gap: 8px; }
+.pill {
+  display: grid; justify-items: center;
+  min-width: 78px; padding: 6px 12px;
+  border: 1px solid var(--line); border-radius: 10px; background: var(--surface);
+}
+.pill span { font-family: var(--f-display); text-transform: uppercase; letter-spacing: .1em; font-size: 12px; color: var(--muted); }
+.pill b { font-family: var(--f-mono); font-size: 22px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+
+/* mode tabs */
+.modes { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; }
+.modes button {
+  flex: 0 0 auto;
+  display: flex; align-items: baseline; gap: 6px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  font-family: var(--f-display); font-weight: 600; font-size: 18px; letter-spacing: .02em;
+}
+.modes button[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.modes button[aria-pressed="true"] .zh { color: inherit; opacity: .75; }
+
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 18px; align-items: start; }
+@media (max-width: 880px) { .layout { grid-template-columns: minmax(0, 1fr); } }
+
+/* station */
+.station {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: clamp(16px, 3vw, 28px);
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px;
+  min-width: 0;
+}
+
+.board {
+  background: var(--board);
+  border-radius: 12px;
+  padding: 12px 14px 16px;
+  container-type: inline-size;
+  display: grid; gap: 12px;
+}
+.board-head {
+  display: flex; justify-content: space-between; gap: 10px;
+  font-family: var(--f-display); text-transform: uppercase; letter-spacing: .14em; font-size: 13px;
+  color: var(--board-label);
+}
+.board-head .zh { color: var(--board-label); letter-spacing: .05em; text-transform: none; }
+.tiles {
+  --fs: min(48px, calc((100cqw - var(--n) * 5px) / (var(--n) * .8)));
+  display: flex; justify-content: center; gap: 4px; min-height: calc(var(--fs) * 1.3);
+  perspective: 400px;
+}
+.tile {
+  position: relative;
+  width: calc(var(--fs) * .76);
+  height: calc(var(--fs) * 1.28);
+  display: grid; place-items: center;
+  background: var(--tile);
+  color: var(--tile-fg);
+  font-family: var(--f-mono); font-weight: 700; font-size: var(--fs);
+  border-radius: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.tile::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: var(--tile-line); }
+.tile.dim { color: var(--tile-dim); }
+.tile.sym { background: transparent; width: calc(var(--fs) * .5); }
+.tile.sym::after { display: none; }
+.tile.gap { background: transparent; width: calc(var(--fs) * .3); }
+.tile.gap::after { display: none; }
+.tile.rev { animation: flip .38s cubic-bezier(.2,.7,.3,1) both; animation-delay: calc(var(--i) * 45ms); transform-origin: 50% 50%; }
+@keyframes flip { from { transform: rotateX(-95deg); opacity: .2; } to { transform: none; opacity: 1; } }
+
+.meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--muted); font-size: 14px; }
+.badge {
+  font-family: var(--f-display); font-weight: 700; letter-spacing: .08em; font-size: 13px;
+  padding: 2px 8px; border-radius: 6px; border: 1.5px solid currentColor; color: var(--ink);
+}
+
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.play {
+  position: relative;
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 22px 10px 10px;
+  border: 0; border-radius: 999px;
+  background: var(--signal); color: var(--signal-ink);
+  font-family: var(--f-display); font-weight: 700; font-size: 22px; letter-spacing: .02em;
+}
+.play .zh { color: var(--signal-ink); opacity: .7; }
+.play .disc { width: 42px; height: 42px; border-radius: 50%; background: var(--signal-ink); display: grid; place-items: center; }
+.play .disc svg { width: 18px; height: 18px; fill: var(--signal); margin-left: 3px; }
+.play.speaking .disc { animation: pulse 1s ease-in-out infinite; }
+@keyframes pulse { 50% { transform: scale(.88); } }
+.ghost {
+  display: flex; align-items: center; gap: 6px;
+  padding: 10px 16px; border-radius: 999px;
+  border: 1px solid var(--line); background: transparent;
+  font-size: 15px;
+}
+.ghost:hover, .modes button:hover { border-color: var(--ink); }
+.ghost svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.prompt-note { margin: -6px 0 0; color: var(--muted); font-size: 14px; }
+
+.options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.options.long { grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 620px) { .options.long { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.opt {
+  display: flex; align-items: center; gap: 12px;
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1.5px solid var(--line); border-radius: 12px;
+  background: var(--paper);
+  text-align: left;
+  font-family: var(--f-mono); font-weight: 700; font-size: clamp(18px, 3.4vw, 24px);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.opt .k { font-family: var(--f-display); font-size: 14px; font-weight: 600; color: var(--muted); border: 1px solid var(--line); border-radius: 5px; padding: 0 6px; flex: none; }
+.opt:not(:disabled):hover { border-color: var(--ink); }
+.opt:disabled { cursor: default; }
+.options.locked .opt { opacity: .45; }
+.opt.correct { background: var(--ok-soft); border-color: var(--ok); color: var(--ink); opacity: 1 !important; }
+.opt.wrong { background: var(--bad-soft); border-color: var(--bad); opacity: 1 !important; }
+.options.done .opt:not(.correct):not(.wrong) { opacity: .45; }
+
+.textans { display: flex; gap: 10px; }
+.textans input {
+  flex: 1; min-width: 0;
+  padding: 12px 14px;
+  border: 1.5px solid var(--line); border-radius: 12px;
+  background: var(--paper);
+  font-family: var(--f-mono); font-weight: 700; font-size: 22px;
+}
+.textans input:focus { border-color: var(--ink); outline: none; }
+.textans input.ok { border-color: var(--ok); background: var(--ok-soft); }
+.textans input.bad { border-color: var(--bad); background: var(--bad-soft); }
+.primary {
+  padding: 12px 20px; border-radius: 12px; border: 0;
+  background: var(--ink); color: var(--surface);
+  font-family: var(--f-display); font-weight: 700; font-size: 19px; letter-spacing: .03em;
+}
+.primary .zh { color: inherit; opacity: .7; }
+
+.feedback { border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 12px; }
+.verdict { margin: 0; font-family: var(--f-display); font-weight: 700; font-size: 28px; line-height: 1.1; text-wrap: balance; }
+.verdict.ok { color: var(--ok); }
+.verdict.bad { color: var(--bad); }
+.verdict .zh { margin-left: 6px; }
+.transcript { margin: 0; font-size: 19px; line-height: 1.45; }
+.transcript mark { background: var(--mark); color: var(--ink); padding: 0 3px; border-radius: 3px; }
+.label { font-family: var(--f-display); text-transform: uppercase; letter-spacing: .12em; font-size: 12px; color: var(--muted); display: block; margin-bottom: 2px; }
+.parts { display: flex; flex-wrap: wrap; gap: 6px; }
+.part { display: inline-flex; align-items: baseline; gap: 8px; padding: 4px 10px; border-radius: 8px; background: var(--paper); border: 1px solid var(--line); max-width: 100%; }
+.part .w { font-style: italic; overflow-wrap: anywhere; }
+.part .d { font-family: var(--f-mono); font-weight: 700; white-space: nowrap; }
+.hints { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.hints li { padding-left: 12px; border-left: 3px solid var(--signal); display: grid; gap: 2px; }
+.hints .zh { font-size: 15px; color: var(--ink); opacity: .85; }
+.voiceinfo { margin: 0; color: var(--muted); font-size: 13px; }
+.next-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+.keys { margin: 0; color: var(--muted); font-size: 13px; }
+.keys kbd { font-family: var(--f-mono); font-size: 12px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; }
+@media (hover: none) { .keys { display: none; } }
+
+.warn { margin: 0; padding: 10px 14px; border-radius: 10px; background: var(--bad-soft); color: var(--ink); font-size: 14px; }
+
+/* side rail */
+.side { display: grid; gap: 14px; min-width: 0; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; display: grid; gap: 14px; min-width: 0; }
+.panel h2 { margin: 0; font-family: var(--f-display); font-weight: 700; font-size: 20px; text-transform: uppercase; letter-spacing: .06em; display: flex; gap: 8px; align-items: baseline; }
+.panel h2 .zh { text-transform: none; letter-spacing: 0; font-size: 14px; }
+.field { display: grid; gap: 6px; }
+.field > label, .field > .flabel { font-weight: 700; font-size: 14px; display: flex; gap: 6px; align-items: baseline; }
+.seg { display: flex; border: 1px solid var(--line); border-radius: 999px; padding: 3px; gap: 2px; }
+.seg button { flex: 1; border: 0; background: transparent; border-radius: 999px; padding: 7px 8px; color: var(--muted); font-size: 14px; white-space: nowrap; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+select { width: 100%; padding: 9px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--paper); font-size: 14px; }
+input[type="range"] { width: 100%; accent-color: var(--signal); }
+.rate-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); }
+.rate-row b { font-family: var(--f-mono); color: var(--ink); }
+.check { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; }
+.check input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--ink); flex: none; }
+.note { margin: 0; font-size: 13px; color: var(--muted); }
+
+.stats { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.stats li { display: grid; grid-template-columns: 84px 1fr 52px; align-items: center; gap: 10px; font-size: 14px; }
+.stats .bar { height: 8px; border-radius: 4px; background: var(--paper); border: 1px solid var(--line); overflow: hidden; }
+.stats .bar i { display: block; height: 100%; background: var(--ok); }
+.stats .n { font-family: var(--f-mono); font-size: 13px; text-align: right; color: var(--muted); }
+
+.history { margin: 0; padding: 0; list-style: none; display: grid; gap: 2px; }
+.history li { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 8px; align-items: start; padding: 8px 0; border-top: 1px solid var(--line); }
+.history li:first-child { border-top: 0; }
+.history .s { font-weight: 700; font-size: 16px; line-height: 1.4; }
+.history .s.ok { color: var(--ok); }
+.history .s.bad { color: var(--bad); }
+.history .a { font-family: var(--f-mono); font-weight: 700; }
+.history .t { display: block; font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+.history button { border: 1px solid var(--line); background: transparent; border-radius: 8px; width: 34px; height: 34px; display: grid; place-items: center; }
+.history button svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.empty { margin: 0; color: var(--muted); font-size: 14px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tile.rev, .play.speaking .disc { animation: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <h1>Zahlenohr <span class="zh">德语数字听力</span></h1>
+      <p>Hör zu, dann tipp die Zahl an, die du gehört hast. Uhrzeiten, Telefonnummern, Preise und Daten, auf Deutsch und Österreichisch. <span class="zh">听德语，选出你听到的数字。</span></p>
+    </div>
+    <div class="scores" aria-live="polite">
+      <div class="pill"><span>Punkte</span><b id="score">0</b></div>
+      <div class="pill"><span>Serie</span><b id="streak">0</b></div>
+      <div class="pill"><span>Rekord</span><b id="best">0</b></div>
+    </div>
+  </header>
+
+  <nav class="modes" id="modes" aria-label="Übungsart"></nav>
+
+  <div class="layout">
+    <main class="station">
+      <div class="board" id="board">
+        <div class="board-head"><span id="boardMode">Uhrzeit</span><span id="boardRegion"></span></div>
+        <div class="tiles" id="tiles"></div>
+      </div>
+
+      <div class="controls">
+        <button class="play" id="play" type="button">
+          <span class="disc"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 1.5v13l11-6.5z"/></svg></span>
+          <span>Anhören <span class="zh">听</span></span>
+        </button>
+        <button class="ghost" id="replay" type="button" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v5h5"/></svg>
+          Nochmal <span class="zh">再听</span>
+        </button>
+        <button class="ghost" id="slow" type="button" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h10"/><path d="M10 7l5 5-5 5"/><path d="M19 6v12"/></svg>
+          Langsam <span class="zh">慢速</span>
+        </button>
+      </div>
+      <p class="warn" id="ttsWarn" hidden></p>
+      <p class="prompt-note" id="promptNote">Erst anhören, dann antworten. <span class="zh">先听，再回答。</span></p>
+
+      <div class="options locked" id="options"></div>
+      <form class="textans" id="textForm" hidden autocomplete="off">
+        <input id="txt" type="text" aria-label="Deine Antwort" disabled>
+        <button class="primary" type="submit" id="txtBtn" disabled>Prüfen <span class="zh">检查</span></button>
+      </form>
+
+      <section class="feedback" id="feedback" hidden aria-live="polite">
+        <p class="verdict" id="verdict"></p>
+        <div>
+          <span class="label">Gesagt wurde <span class="zh">原句</span></span>
+          <p class="transcript" id="transcript"></p>
+        </div>
+        <div class="parts" id="parts"></div>
+        <ul class="hints" id="hints"></ul>
+        <p class="voiceinfo" id="voiceinfo"></p>
+        <div class="next-row">
+          <button class="primary" id="next" type="button">Weiter <span class="zh">下一题</span> →</button>
+          <button class="ghost" id="replay2" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v5h5"/></svg>
+            Nochmal anhören
+          </button>
+        </div>
+      </section>
+
+      <p class="keys">Tastatur: <kbd>Leertaste</kbd> anhören · <kbd>L</kbd> langsam · <kbd>1</kbd>–<kbd>4</kbd> antworten · <kbd>Enter</kbd> weiter</p>
+    </main>
+
+    <aside class="side">
+      <section class="panel" aria-labelledby="setH">
+        <h2 id="setH">Einstellungen <span class="zh">设置</span></h2>
+        <div class="field">
+          <span class="flabel">Region <span class="zh">地区说法</span></span>
+          <div class="seg" id="regionSeg">
+            <button type="button" data-v="DE">Deutschland</button>
+            <button type="button" data-v="AT">Österreich</button>
+            <button type="button" data-v="mix">Gemischt</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="voice">Stimme <span class="zh">声音</span></label>
+          <select id="voice"></select>
+          <p class="note" id="voiceStatus">Stimmen werden geladen …</p>
+        </div>
+        <div class="field">
+          <label for="rate">Tempo <span class="zh">语速</span></label>
+          <input type="range" id="rate" min="0.7" max="1.3" step="0.05" value="1">
+          <div class="rate-row"><span>langsam</span><b id="rateVal">1.00×</b><span>schnell</span></div>
+        </div>
+        <div class="field">
+          <span class="flabel">Antworten <span class="zh">答题方式</span></span>
+          <div class="seg" id="answerSeg">
+            <button type="button" data-v="mc">Auswählen <span class="zh">选择</span></button>
+            <button type="button" data-v="text">Eintippen <span class="zh">输入</span></button>
+          </div>
+        </div>
+        <label class="check"><input type="checkbox" id="ctx"> <span>Ganze Sätze statt nur der Zahl <span class="zh">用完整句子</span></span></label>
+        <label class="check"><input type="checkbox" id="noise"> <span>Hintergrundrauschen wie am Bahnhof <span class="zh">背景噪音</span></span></label>
+        <label class="check"><input type="checkbox" id="zh"> <span>Chinesische Hinweise <span class="zh">中文提示</span></span></label>
+      </section>
+
+      <section class="panel" aria-labelledby="statH">
+        <h2 id="statH">Trefferquote <span class="zh">正确率</span></h2>
+        <ul class="stats" id="stats"></ul>
+      </section>
+
+      <section class="panel" aria-labelledby="histH">
+        <h2 id="histH">Verlauf <span class="zh">记录</span></h2>
+        <ol class="history" id="history"></ol>
+        <p class="empty" id="histEmpty">Hier erscheinen deine letzten Antworten. Mit dem Lautsprecher-Knopf hörst du sie noch einmal. <span class="zh">点喇叭可以重听。</span></p>
+      </section>
+    </aside>
+  </div>
+</div>
+
+<script>
+(() => {
+'use strict';
+const $ = s => document.querySelector(s);
+const R = Math.random;
+const ri = (a, b) => a + Math.floor(R() * (b - a + 1));
+const pick = a => a[Math.floor(R() * a.length)];
+const chance = p => R() < p;
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(R() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+/* ---------- German number words ---------- */
+const ONES = ['null','eins','zwei','drei','vier','fünf','sechs','sieben','acht','neun','zehn','elf','zwölf','dreizehn','vierzehn','fünfzehn','sechzehn','siebzehn','achtzehn','neunzehn'];
+const TENS = ['','','zwanzig','dreißig','vierzig','fünfzig','sechzig','siebzig','achtzig','neunzig'];
+function u100(n, inner) {
+  if (n < 20) return (n === 1 && inner) ? 'ein' : ONES[n];
+  const t = Math.floor(n / 10), o = n % 10;
+  return o ? (o === 1 ? 'ein' : ONES[o]) + 'und' + TENS[t] : TENS[t];
+}
+function u1000(n, inner) {
+  const h = Math.floor(n / 100), r = n % 100;
+  let s = '';
+  if (h) s += (h === 1 ? (chance(.5) ? 'ein' : '') : ONES[h]) + 'hundert';
+  if (r) s += u100(r, inner);
+  return s;
+}
+function numWords(n) {
+  if (n === 0) return 'null';
+  const mil = Math.floor(n / 1e6), th = Math.floor(n / 1000) % 1000, rest = n % 1000;
+  const parts = [];
+  if (mil) parts.push(mil === 1 ? 'eine Million' : u1000(mil, false) + ' Millionen');
+  let s = '';
+  if (th) s += (th === 1 ? (chance(.6) ? 'ein' : '') : u1000(th, true)) + 'tausend';
+  if (rest) s += u1000(rest, false);
+  if (s) parts.push(s);
+  return parts.join(' ');
+}
+function yearWords(y) {
+  if (y >= 1100 && y < 2000) { const c = Math.floor(y / 100), r = y % 100; return ONES[c] + 'hundert' + (r ? u100(r, false) : ''); }
+  return numWords(y);
+}
+const fmtNum = n => n >= 10000 ? String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.') : String(n);
+const fmtPrice = c => `${Math.floor(c / 100)},${String(c % 100).padStart(2, '0')} €`;
+
+/* ---------- learning notes ---------- */
+const UNIT = { ein: 1, zwei: 2, drei: 3, vier: 4, 'fünf': 5, sechs: 6, sieben: 7, acht: 8, neun: 9 };
+const TENW = { zwanzig: 20, 'dreißig': 30, vierzig: 40, 'fünfzig': 50, sechzig: 60, siebzig: 70, achtzig: 80, neunzig: 90 };
+function addNumNotes(hints, words) {
+  const m = words.match(/(ein|zwei|drei|vier|fünf|sechs|sieben|acht|neun)und(zwanzig|dreißig|vierzig|fünfzig|sechzig|siebzig|achtzig|neunzig)/);
+  if (m) {
+    const o = UNIT[m[1]], t = TENW[m[2]];
+    hints.push({ de: `„${m[0]}" = ${o} + ${t} = ${t + o}. Erst die Einer, dann die Zehner.`, zh: `德语先说个位再说十位：${m[0]} = ${o} + ${t} = ${t + o}` });
+  }
+  if (/(drei|vier|fünf|sech|sieb|acht|neun)zehn/.test(words) || /(?<!und)(dreißig|vierzig|fünfzig|sechzig|siebzig|achtzig|neunzig)/.test(words)) {
+    hints.push({ de: '„-zehn" heißt 13 bis 19, „-zig" / „-ßig" heißt 20 bis 90: sechzehn (16) ist nicht sechzig (60).', zh: '-zehn 是十几（13–19），-zig/-ßig 是几十（20–90）：sechzehn = 16，sechzig = 60。' });
+  }
+  if (/\bzwo\b/.test(words)) {
+    hints.push({ de: '„zwo" ist zwei. Am Telefon sagt man oft zwo, damit es nicht wie drei klingt.', zh: 'zwo = zwei（打电话时常用，避免和 drei 混淆）' });
+  }
+}
+
+function buildOptions(answer, traps, filler) {
+  const seen = new Set([answer]); const out = [answer];
+  const sorted = shuffle(traps.slice()).sort((a, b) => b.p - a.p);
+  let hi = 0;
+  for (const t of sorted) {
+    if (out.length >= 4) break;
+    if (t.v == null || seen.has(t.v)) continue;
+    if (t.p >= 2) { if (hi >= 2) continue; hi++; }
+    seen.add(t.v); out.push(t.v);
+  }
+  let g = 0;
+  while (out.length < 4 && g++ < 400) { const v = filler(); if (v != null && !seen.has(v)) { seen.add(v); out.push(v); } }
+  return shuffle(out);
+}
+
+/* ---------- context sentences ---------- */
+const TPL = {
+  timeC: {
+    AT: ['Treffen wir uns um {x}?', 'Geht sich {x} für dich aus?', 'Ich hol dich um {x} ab.', 'Die Ordination sperrt um {x} auf.', 'Es ist schon {x}.', 'Passt dir {x}?'],
+    DE: ['Treffen wir uns um {x}?', 'Passt dir {x}?', 'Ich hol dich um {x} ab.', 'Die Praxis macht um {x} auf.', 'Es ist schon {x}.', 'Wir sehen uns dann um {x}.']
+  },
+  timeF: {
+    AT: ['Der Zug nach Wien fährt um {x} ab.', 'Ihr Termin ist am Dienstag um {x}.', 'Der Flug landet planmäßig um {x}.', 'Die Vorstellung beginnt um {x}.'],
+    DE: ['Der Zug nach Hamburg fährt um {x} ab.', 'Ihr Termin ist am Dienstag um {x}.', 'Der Flug landet planmäßig um {x}.', 'Die Vorstellung beginnt um {x}.']
+  },
+  phone: {
+    AT: ['Meine Handynummer is {x}.', 'Sie erreichen mich unter {x}.', 'Servus, ruf mich bitte zurück unter {x}.', 'Schreib dir die Nummer auf: {x}.'],
+    DE: ['Meine Handynummer ist {x}.', 'Sie erreichen mich unter {x}.', 'Hallo, ruf mich bitte zurück unter {x}.', 'Schreib dir die Nummer auf: {x}.']
+  },
+  price: {
+    AT: ['Des macht dann {x}, bitte.', 'Das kostet {x}.', 'Zusammen {x}.', 'Die Melange kostet {x}.'],
+    DE: ['Das macht dann {x}, bitte.', 'Das kostet {x}.', 'Zusammen {x}.', 'Der Kaffee kostet {x}.']
+  },
+  date: {
+    AT: ['Der Termin ist am {x}.', 'Ich hab am {x} Geburtstag.', 'Wir fliegen am {x}.', 'Die Prüfung ist am {x}.'],
+    DE: ['Der Termin ist am {x}.', 'Ich habe am {x} Geburtstag.', 'Wir fliegen am {x}.', 'Die Prüfung ist am {x}.']
+  },
+  num: ['Ihre Wartenummer ist {x}.', 'Die richtige Antwort ist {x}.', 'Ihr Zimmer hat die Nummer {x}.'],
+  numNoun: ['Das sind ungefähr {x} Kilometer.', 'Zum Konzert kamen {x} Leute.'],
+  big: ['Die Stadt hat {x} Einwohner.', 'Das Auto hat {x} Kilometer drauf.'],
+  year: ['Ich bin {x} geboren.', 'Das Haus wurde {x} gebaut.', 'Das war im Jahr {x}.']
+};
+
+/* ---------- parsers ---------- */
+function parseTime(s) {
+  s = String(s).trim();
+  const m = s.match(/^(\d{1,2})\s*[:.,h ]\s*(\d{1,2})/);
+  if (m) return [+m[1], +m[2]];
+  const d = s.replace(/\D/g, '');
+  if (d.length === 3 || d.length === 4) return [+d.slice(0, -2), +d.slice(-2)];
+  if (d.length >= 1 && d.length <= 2) return [+d, 0];
+  return null;
+}
+function normPhone(s) {
+  s = String(s).trim();
+  let d = s.replace(/\D/g, '');
+  if (s.startsWith('+')) d = '00' + d;
+  if (/^00(43|49)/.test(d)) d = '0' + d.slice(4);
+  return d;
+}
+function parsePrice(s) {
+  s = String(s).replace(/€|euro?/gi, '').replace(/\s/g, '').replace(/,-+$/, '');
+  if (/^\d+([.,]\d{1,2})?$/.test(s)) return Math.round(parseFloat(s.replace(',', '.')) * 100);
+  return null;
+}
+function parseDate(s) {
+  const m = String(s).match(/(\d{1,2})\s*[.\/-]\s*(\d{1,2})/);
+  return m ? [+m[1], +m[2]] : null;
+}
+
+/* ---------- generators ---------- */
+const fmt24 = t => { t = ((t % 1440) + 1440) % 1440; return Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0'); };
+const fmt12 = t => { t = ((t % 1440) + 1440) % 1440; const h = Math.floor(t / 60); return (h % 12 || 12) + ':' + String(t % 60).padStart(2, '0'); };
+
+function dayPart(h, reg) {
+  const AT = reg === 'AT';
+  if (h < 10) return [AT ? 'in der Früh' : pick(['morgens', 'am Morgen']), '早上'];
+  if (h < 12) return [AT ? 'am Vormittag' : pick(['vormittags', 'am Vormittag']), '上午'];
+  if (h < 14) return [AT ? 'zu Mittag' : 'mittags', '中午'];
+  if (h < 18) return [AT ? 'am Nachmittag' : pick(['nachmittags', 'am Nachmittag']), '下午'];
+  if (h < 23) return [AT ? 'am Abend' : pick(['abends', 'am Abend']), '晚上'];
+  return [AT ? 'in der Nacht' : 'nachts', '夜里'];
+}
+
+function genTime(region) {
+  const hints = [];
+  if (chance(.35)) {
+    const h = ri(0, 23), m = chance(.5) ? ri(0, 11) * 5 : ri(0, 59), t = h * 60 + m;
+    const H = h === 1 ? 'ein' : numWords(h);
+    const core = m ? `${H} Uhr ${numWords(m)}` : `${H} Uhr`;
+    const traps = []; const mt = Math.floor(m / 10), mo = m % 10;
+    if (mt >= 2 && mo && mo !== mt && mo <= 5) traps.push({ p: 3, v: fmt24(h * 60 + mo * 10 + mt) });
+    if (m >= 13 && m <= 15) traps.push({ p: 3, v: fmt24(h * 60 + (m - 10) * 10) });
+    if (m >= 30 && m % 10 === 0) traps.push({ p: 3, v: fmt24(h * 60 + mt + 10) });
+    if (h >= 13 && h <= 19) traps.push({ p: 2, v: fmt24(t - 600) });
+    if (h >= 3 && h <= 9) traps.push({ p: 2, v: fmt24(t + 600) });
+    if (h === 21) traps.push({ p: 2, v: fmt24(12 * 60 + m) });
+    if (h === 12) traps.push({ p: 2, v: fmt24(21 * 60 + m) });
+    traps.push({ p: 1, v: fmt24(t + 60) }, { p: 1, v: fmt24(t - 60) });
+    const answer = fmt24(t);
+    hints.push({ de: 'Offizielle Uhrzeit (24 h): erst die Stunde, dann „Uhr", dann die Minuten.', zh: `正式说法（24小时制）：小时 + Uhr + 分钟 → ${answer}` });
+    addNumNotes(hints, core);
+    return {
+      core, tpl: TPL.timeF[region], answer,
+      options: buildOptions(answer, traps, () => fmt24(t + pick([-1, 1]) * pick([1, 2, 5, 10, 12, 20, 60, 120]))),
+      check: s => { const p = parseTime(s); return !!p && p[1] === m && (p[0] === h || (h === 0 && p[0] === 24)); },
+      hints, parts: [], kind: 'offiziell (24 h)', ph: 'z. B. 17:30', im: 'decimal'
+    };
+  }
+  const h24 = ri(6, 22), mm = ri(0, 11) * 5, t = h24 * 60 + mm;
+  const h12 = h24 % 12 || 12, nx = h12 % 12 + 1;
+  const W = n => n === 1 ? 'eins' : numWords(n);
+  const atStyle = region === 'AT';
+  let p, kind;
+  switch (mm) {
+    case 0: p = chance(.5) ? `${h12 === 1 ? 'ein' : numWords(h12)} Uhr` : W(h12); kind = 'full'; break;
+    case 5: case 10: p = `${numWords(mm)} nach ${W(h12)}`; kind = 'nach'; break;
+    case 15:
+      if (chance(atStyle ? .75 : .15)) { p = `viertel ${W(nx)}`; kind = 'viertelX'; }
+      else { p = `Viertel nach ${W(h12)}`; kind = 'viertelNach'; } break;
+    case 20:
+      if (chance(.5)) { p = `zwanzig nach ${W(h12)}`; kind = 'nach'; }
+      else { p = `zehn vor halb ${W(nx)}`; kind = 'vorHalb'; } break;
+    case 25: p = `fünf vor halb ${W(nx)}`; kind = 'vorHalb'; break;
+    case 30: p = `halb ${W(nx)}`; kind = 'halb'; break;
+    case 35: p = `fünf nach halb ${W(nx)}`; kind = 'nachHalb'; break;
+    case 40:
+      if (chance(.5)) { p = `zwanzig vor ${W(nx)}`; kind = 'vor'; }
+      else { p = `zehn nach halb ${W(nx)}`; kind = 'nachHalb'; } break;
+    case 45:
+      if (chance(atStyle ? .75 : .15)) { p = `dreiviertel ${W(nx)}`; kind = 'dreiviertel'; }
+      else { p = `Viertel vor ${W(nx)}`; kind = 'viertelVor'; } break;
+    default: p = `${numWords(60 - mm)} vor ${W(nx)}`; kind = 'vor';
+  }
+  const dp = chance(.5) ? dayPart(h24, region) : null;
+  const core = dp ? `${p} ${dp[0]}` : p;
+  const exact = !!dp;
+  const F = exact ? fmt24 : fmt12;
+  const off = {
+    full: [60, -60, 30], nach: [-2 * mm, 60, 30], vor: [2 * (60 - mm), -60, -30],
+    viertelX: [60, 30, -30], viertelNach: [30, -30, 60], viertelVor: [-30, 30, -60],
+    dreiviertel: [60, -30, 30], halb: [60, -60, -30],
+    vorHalb: [60, 2 * (30 - mm), 30], nachHalb: [60, -2 * (mm - 30), -30]
+  }[kind];
+  const traps = off.map((o, i) => ({ p: 3 - i, v: F(t + o) }));
+  if (exact) traps.push({ p: 1, v: fmt24(h24 < 12 ? t + 720 : t - 720) });
+  const answer = F(t);
+  const A = fmt12(t);
+  const H = {
+    full: [`„${W(h12)}" = ${A}, also genau zur vollen Stunde.`, `${h12} 点整`],
+    nach: [`„${numWords(mm)} nach ${W(h12)}" = ${A}`, `${h12} 点过 ${mm} 分 = ${A}`],
+    vor: [`„${numWords(60 - mm)} vor ${W(nx)}" = ${A}`, `差 ${60 - mm} 分 ${nx} 点 = ${A}`],
+    viertelX: [`„viertel ${W(nx)}" = ${A}. Die erste Viertelstunde auf dem Weg zu ${nx} Uhr ist vorbei. Typisch für Österreich und Ostdeutschland.`, `奥地利 / 德国东部说法：往 ${nx} 点走了一刻钟 = ${A}`],
+    dreiviertel: [`„dreiviertel ${W(nx)}" = ${A}. Drei Viertelstunden auf dem Weg zu ${nx} Uhr sind vorbei.`, `往 ${nx} 点走了三刻钟 = ${A}`],
+    viertelNach: [`„Viertel nach ${W(h12)}" = ${A}`, `${h12} 点过一刻 = ${A}`],
+    viertelVor: [`„Viertel vor ${W(nx)}" = ${A}`, `差一刻 ${nx} 点 = ${A}`],
+    halb: [`„halb ${W(nx)}" = ${A}. „halb" zeigt immer auf die nächste Stunde.`, `halb ${nx} = 差半小时到 ${nx} 点 = ${A}（不是 ${nx}:30！）`],
+    vorHalb: [`„… vor halb ${W(nx)}" = ${30 - mm} Minuten vor ${h12}:30, also ${A}.`, `${h12}:30 前 ${30 - mm} 分钟 = ${A}`],
+    nachHalb: [`„… nach halb ${W(nx)}" = ${mm - 30} Minuten nach ${h12}:30, also ${A}.`, `${h12}:30 后 ${mm - 30} 分钟 = ${A}`]
+  }[kind];
+  hints.push({ de: H[0], zh: H[1] });
+  if (dp) hints.push({ de: `„${dp[0]}" sagt dir die Tageszeit, also ${fmt24(t)}.`, zh: `${dp[0]} = ${dp[1]}，所以是 ${fmt24(t)}` });
+  else {
+    const am = fmt24(t % 720), pm = fmt24(t % 720 + 720);
+    hints.push({ de: `Keine Tageszeit genannt: ${am} und ${pm} zählen beide.`, zh: `没说早上还是晚上，所以 ${am} 和 ${pm} 都算对。` });
+  }
+  return {
+    core, tpl: TPL.timeC[region], answer,
+    options: buildOptions(answer, traps, () => F(t + pick([-1, 1]) * pick([5, 10, 15, 30, 60, 90]))),
+    check: s => { const q = parseTime(s); if (!q || q[1] !== mm) return false; return exact ? q[0] === h24 : q[0] % 12 === h24 % 12; },
+    hints, parts: [], kind: 'umgangssprachlich' + (dp ? ' mit Tageszeit' : ''), ph: exact ? 'z. B. 19:30' : 'z. B. 7:15', im: 'decimal'
+  };
+}
+
+const AT_MOBILE = ['0664', '0650', '0660', '0676', '0677', '0680', '0681', '0699', '0688'];
+const AT_LAND = [['01', 7, 'Wien'], ['0316', 6, 'Graz'], ['0732', 6, 'Linz'], ['0662', 6, 'Salzburg'], ['0512', 6, 'Innsbruck']];
+const DE_MOBILE = ['0151', '0152', '0157', '0160', '0162', '0170', '0171', '0172', '0173', '0175', '0176', '0177', '0178', '0179'];
+const DE_LAND = [['030', 8, 'Berlin'], ['040', 8, 'Hamburg'], ['089', 8, 'München'], ['0221', 7, 'Köln'], ['069', 8, 'Frankfurt']];
+const CONF = { '0': '8', '1': '7', '2': '3', '3': '2', '4': '8', '5': '9', '6': '7', '7': '6', '8': '4', '9': '5' };
+
+function chunk(digits, style) {
+  const n = digits.length; const sizes = [];
+  if (style === 'single') { for (let i = 0; i < n; i++) sizes.push(1); }
+  else if (style === 'pairs') {
+    let rem = n;
+    if (rem % 2) { const f = chance(.5) ? 1 : 3; sizes.push(f); rem -= f; }
+    while (rem > 0) { sizes.push(2); rem -= 2; }
+  } else if (style === 'triples') {
+    let rem = n;
+    while (rem > 0) {
+      if (rem === 4) { sizes.push(2, 2); rem = 0; }
+      else if (rem <= 2) { sizes.push(rem); rem = 0; }
+      else { sizes.push(3); rem -= 3; }
+    }
+  } else {
+    let rem = n;
+    while (rem > 0) {
+      let s = pick([2, 2, 3, 3, 1]);
+      if (s > rem) s = rem;
+      if (rem - s === 1 && s > 1 && chance(.7)) s = rem <= 3 ? rem : s - 1;
+      sizes.push(s); rem -= s;
+    }
+  }
+  const out = []; let i = 0;
+  for (const s of sizes) { out.push(digits.slice(i, i + s)); i += s; }
+  return out;
+}
+
+function genPhone(region) {
+  const mobile = chance(.6);
+  let prefix, subLen, city = null;
+  if (region === 'AT') {
+    if (mobile) { prefix = pick(AT_MOBILE); subLen = pick([7, 7, 7, 6, 8]); }
+    else { const c = pick(AT_LAND); prefix = c[0]; subLen = c[1]; city = c[2]; }
+  } else {
+    if (mobile) { prefix = pick(DE_MOBILE); subLen = pick([7, 8, 8]); }
+    else { const c = pick(DE_LAND); prefix = c[0]; subLen = c[1]; city = c[2]; }
+  }
+  let sub = String(ri(2, 9)); while (sub.length < subLen) sub += ri(0, 9);
+  const intl = chance(.2);
+  const ext = (!mobile && chance(.3)) ? String(ri(10, 999)) : '';
+  const zwo = region === 'DE' && chance(.35);
+  const dw = d => (d === '2' && zwo) ? 'zwo' : ONES[+d];
+  const dws = s => s.split('').map(dw).join(' ');
+  const speakBlock = b => b.length === 1 ? dw(b) : (b[0] === '0' ? dw('0') + ' ' + speakBlock(b.slice(1)) : numWords(+b));
+
+  const cc = region === 'AT' ? '43' : '49';
+  const parts = [];
+  let head;
+  const prefixDisp = intl ? prefix.slice(1) : prefix;
+  if (intl) {
+    const ccW = pick([`plus ${dws(cc)}`, `plus ${numWords(+cc)}`, `null null ${dws(cc)}`]);
+    parts.push({ w: ccW, d: '+' + cc });
+    head = ccW + ', ';
+  } else head = '';
+  const pW = dws(prefixDisp);
+  parts.push({ w: pW, d: prefixDisp });
+  head += pW;
+
+  const style = pick(['single', 'pairs', 'pairs', 'triples', 'mixed', 'mixed', 'mixed']);
+  const blocks = chunk(sub, style);
+  const bW = blocks.map(speakBlock);
+  blocks.forEach((b, i) => parts.push({ w: bW[i], d: b }));
+  const sep = chance(.5) ? ', ' : ' ';
+  let core = head + ', ' + bW.join(sep);
+  if (ext) {
+    const eW = chance(.6) ? numWords(+ext) : dws(ext);
+    parts.push({ w: 'Durchwahl ' + eW, d: '-' + ext });
+    core += ', Durchwahl ' + eW;
+  }
+  const disp = (bs, ex) => (intl ? `+${cc} ${prefixDisp}` : prefix) + ' ' + bs.join(' ') + (ex ? '-' + ex : '');
+  const answer = disp(blocks, ext);
+
+  const traps = [];
+  const blockAlt = (b) => {
+    const out = [];
+    if (b.length >= 2 && b[0] !== '0') {
+      const r = b.slice(-2), tn = +r[0], on = +r[1], rv = +r;
+      if (tn >= 2 && on > 0 && tn !== on) out.push({ p: 3, v: b.slice(0, -2) + r[1] + r[0] });
+      if (rv >= 13 && rv <= 19) out.push({ p: 2, v: b.slice(0, -2) + String(rv - 10) + '0' });
+      if (rv >= 30 && rv % 10 === 0) out.push({ p: 2, v: b.slice(0, -2) + '1' + String(rv / 10) });
+    }
+    return out;
+  };
+  blocks.forEach((b, i) => blockAlt(b).forEach(a => { const bs = blocks.slice(); bs[i] = a.v; traps.push({ p: a.p, v: disp(bs, ext) }); }));
+  if (ext) blockAlt(ext).forEach(a => traps.push({ p: a.p, v: disp(blocks, a.v) }));
+  const mutate = () => {
+    const bs = blocks.slice(); const i = ri(0, bs.length - 1); const b = bs[i]; const j = ri(0, b.length - 1);
+    const nd = chance(.6) ? CONF[b[j]] : String(ri(0, 9));
+    bs[i] = b.slice(0, j) + nd + b.slice(j + 1);
+    return disp(bs, ext);
+  };
+  for (let k = 0; k < 3; k++) traps.push({ p: 1, v: mutate() });
+
+  const hints = [];
+  if (style !== 'single') hints.push({ de: 'Telefonnummern werden oft in Zweier- oder Dreierblöcken gesprochen. Jeder Block ist eine eigene Zahl.', zh: '电话号码常常两位或三位一组读，每组当作一个数字。' });
+  addNumNotes(hints, core);
+  if (ext) hints.push({ de: 'Die Durchwahl ist die Nummer der Person in der Firma.', zh: 'Durchwahl = 分机号' });
+  if (intl) hints.push({ de: `+${cc} ist die Vorwahl für ${region === 'AT' ? 'Österreich' : 'Deutschland'}. Danach fällt die erste Null weg.`, zh: `+${cc} 是${region === 'AT' ? '奥地利' : '德国'}的国家代码，后面的区号去掉开头的 0。` });
+
+  let tpl = TPL.phone[region];
+  if (city) tpl = tpl.concat([`Die Nummer vom Büro in ${city} ist {x}.`]);
+  return {
+    core, tpl, answer,
+    options: buildOptions(answer, traps, mutate),
+    check: s => normPhone(s) === normPhone(answer),
+    hints, parts, kind: (mobile ? 'Handynummer' : 'Festnetz' + (city ? ' ' + city : '')) + (intl ? ' international' : ''),
+    ph: region === 'AT' ? 'z. B. 0664 1234567' : 'z. B. 0171 12345678', im: 'tel'
+  };
+}
+
+function genNumber(region) {
+  const r = R(); let n, kind;
+  if (r < .3) { do { n = ri(21, 99); } while (n % 10 === 0); kind = 'zwei'; }
+  else if (r < .4) { n = chance(.5) ? ri(13, 19) : ri(3, 9) * 10; kind = 'teen'; }
+  else if (r < .65) { n = ri(100, 9999); kind = 'mittel'; }
+  else if (r < .85) { n = ri(10, 999) * 1000 + (chance(.6) ? ri(0, 999) : 0); kind = 'gross'; }
+  else { n = ri(1950, 2029); kind = 'jahr'; }
+  const words = kind === 'jahr' ? yearWords(n) : numWords(n);
+  const D = v => kind === 'jahr' ? String(v) : fmtNum(v);
+  const small = kind === 'zwei' || kind === 'teen';
+  const ok = v => v > 0 && v !== n && (!small || (v >= 10 && v <= 99)) && (kind !== 'jahr' || (v >= 1000 && v <= 2099));
+  const traps = [];
+  const groups = [[n % 1000, 1]]; if (n >= 1000) groups.push([Math.floor(n / 1000) % 1000, 1000]);
+  for (const [g, sc] of groups) {
+    const rr = g % 100, tn = Math.floor(rr / 10), on = rr % 10;
+    if (tn >= 2 && on && tn !== on) traps.push({ p: 3, v: n + (on * 10 + tn - rr) * sc });
+    if (rr >= 13 && rr <= 19) traps.push({ p: 3, v: n + ((rr - 10) * 10 - rr) * sc });
+    if (rr >= 30 && on === 0) traps.push({ p: 3, v: n + ((tn + 10) - rr) * sc });
+    if (rr === 12) traps.push({ p: 1, v: n + 8 * sc });
+  }
+  if (n >= 10000) traps.push({ p: 1, v: Math.round(n / 10) }, { p: 1, v: n * 10 > 999999 ? n - 100000 : n * 10 });
+  if (n >= 100) traps.push({ p: 1, v: n + pick([-100, 100]) });
+  const T = traps.filter(t => ok(t.v)).map(t => ({ p: t.p, v: D(t.v) }));
+  const filler = () => {
+    const step = small ? pick([1, 2, 10, 11]) : pick([1, 10, 100, 1000].filter(s => s * 3 < n || s === 1));
+    const v = n + pick([-1, 1]) * step * ri(1, 3);
+    return ok(v) ? D(v) : null;
+  };
+  const answer = D(n);
+  const hints = [];
+  addNumNotes(hints, words);
+  if (kind === 'jahr' && n < 2000) hints.push({ de: 'Jahre vor 2000 sagt man in Hunderten: neunzehnhundert… = 19…', zh: '2000 年以前的年份按“几百”读：neunzehnhundert… = 19…' });
+  if (kind === 'gross') hints.push({ de: 'Große Zahlen: alles vor „tausend" ist die Tausender-Zahl.', zh: '大数字：tausend 前面的部分是“几千”。' });
+  let tpl;
+  if (kind === 'jahr') tpl = TPL.year;
+  else if (kind === 'gross') tpl = (n % 100 === 1) ? TPL.num : TPL.big;
+  else tpl = (n % 100 === 1) ? TPL.num : TPL.num.concat(TPL.numNoun);
+  return {
+    core: words, tpl, answer,
+    options: buildOptions(answer, T, filler),
+    check: s => String(s).replace(/\D/g, '') === String(n),
+    hints, parts: [{ w: words, d: answer }],
+    kind: { zwei: 'zweistellig', teen: '-zehn oder -zig', mittel: 'bis 9999', gross: 'große Zahl', jahr: 'Jahreszahl' }[kind],
+    ph: 'z. B. 3412', im: 'numeric'
+  };
+}
+
+function genPrice(region) {
+  let e; const r = R();
+  if (r < .12) e = 0; else if (r < .5) e = ri(1, 9); else if (r < .9) e = ri(10, 99); else { do { e = ri(100, 999); } while (e % 100 === 1); }
+  let c = e === 0 ? pick([10, 20, 30, 40, 50, 60, 70, 80, 90, 15, 45, 95, 99, 49, 19, 35, 55, 65, 75]) : pick([0, 50, 90, 95, 99, 49, 20, 80, 40, 30, ri(10, 99), ri(10, 99)]);
+  if (c > 0 && c < 10) c += 10;
+  const cents = e * 100 + c;
+  const eNum = e ? numWords(e) : '';
+  const eW = e === 1 ? 'ein' : eNum;
+  const cW = c ? numWords(c) : '';
+  let core, euroSaid = true;
+  if (c === 0) core = `${eW} Euro`;
+  else if (e === 0) core = `${cW} Cent`;
+  else {
+    const v = R();
+    if (v < .45) core = `${eW} Euro ${cW}`;
+    else if (v < .85) { core = `${e === 1 ? 'eins' : eNum} ${cW}`; euroSaid = false; }
+    else core = `${eW} Euro und ${cW} Cent`;
+  }
+  const P = fmtPrice;
+  const swap2 = n => { const t = Math.floor(n / 10), o = n % 10; return (t >= 2 && o && t !== o) ? o * 10 + t : null; };
+  const teen = n => (n >= 13 && n <= 19) ? (n - 10) * 10 : ((n >= 30 && n <= 90 && n % 10 === 0) ? n / 10 + 10 : null);
+  const T = [];
+  if (e >= 10 && e <= 99) { const s = swap2(e); if (s) T.push({ p: 3, v: P(s * 100 + c) }); const tt = teen(e); if (tt) T.push({ p: 3, v: P(tt * 100 + c) }); }
+  if (e >= 100) { const rr = e % 100, s = swap2(rr); if (s) T.push({ p: 3, v: P((e - rr + s) * 100 + c) }); }
+  if (c) { const s = swap2(c); if (s) T.push({ p: 3, v: P(e * 100 + s) }); const tt = teen(c); if (tt) T.push({ p: 3, v: P(e * 100 + tt) }); }
+  if (e >= 3 && e <= 9) T.push({ p: 2, v: P((e + 10) * 100 + c) });
+  T.push({ p: 1, v: P(cents + 100) });
+  if (cents > 100) T.push({ p: 1, v: P(cents - 100) });
+  const answer = P(cents);
+  const hints = [];
+  if (!euroSaid) hints.push({ de: 'Oft lässt man „Euro" weg: erst die Euro, dann die Cent.', zh: `常常省略 Euro：${core} = ${answer}` });
+  else if (e && c) hints.push({ de: 'Die Zahl nach „Euro" sind die Cent.', zh: `Euro 后面的数字是 Cent：${answer}` });
+  addNumNotes(hints, core);
+  const parts = [];
+  if (e) parts.push({ w: eW, d: e + ' €' });
+  if (c) parts.push({ w: cW, d: c + ' ct' });
+  return {
+    core, tpl: TPL.price[region], answer,
+    options: buildOptions(answer, T, () => { const v = cents + pick([-1, 1]) * pick([5, 10, 50, 100, 200, 1000]); return v >= 10 ? P(v) : null; }),
+    check: s => parsePrice(s) === cents,
+    hints, parts, kind: euroSaid ? 'Preis' : 'Preis ohne „Euro"', ph: 'z. B. 14,90', im: 'decimal'
+  };
+}
+
+const DIM = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+const MONTH_DE = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+const MONTH_ZH = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
+function ordDat(n) {
+  const sp = { 1: 'ersten', 3: 'dritten', 7: 'siebten', 8: 'achten' };
+  if (n < 20) return sp[n] || ONES[n] + 'ten';
+  return u100(n, false) + 'sten';
+}
+function genDate(region) {
+  const mo = ri(1, 12), d = ri(1, DIM[mo - 1]);
+  const byName = chance(.6);
+  let mW;
+  if (byName) {
+    mW = MONTH_DE[mo - 1];
+    if (region === 'AT' && mo === 1) mW = 'Jänner';
+    if (region === 'AT' && mo === 2 && chance(.35)) mW = 'Feber';
+  } else { const o = ordDat(mo); mW = o[0].toUpperCase() + o.slice(1); }
+  const dW = ordDat(d);
+  const core = `${dW} ${mW}`;
+  const valid = (dd, mm) => mm >= 1 && mm <= 12 && dd >= 1 && dd <= DIM[mm - 1];
+  const D = (dd, mm) => valid(dd, mm) ? `${dd}.${mm}.` : null;
+  const T = [];
+  if (d >= 13 && d <= 19) T.push({ p: 3, v: D((d - 10) * 10, mo) });
+  if (d === 30) T.push({ p: 3, v: D(13, mo) });
+  if (d === 20) T.push({ p: 2, v: D(12, mo) });
+  if (d === 12) T.push({ p: 2, v: D(20, mo) });
+  if (d > 20 && d % 10) T.push({ p: 3, v: D((d % 10) * 10 + Math.floor(d / 10), mo) });
+  if (!byName && d !== mo) T.push({ p: 3, v: D(mo, d) });
+  if (byName && mo === 6) T.push({ p: 3, v: D(d, 7) });
+  if (byName && mo === 7) T.push({ p: 3, v: D(d, 6) });
+  T.push({ p: 1, v: D(d, mo % 12 + 1) }, { p: 1, v: D(d + 1, mo) }, { p: 1, v: D(d - 1, mo) });
+  const answer = D(d, mo);
+  const hints = [];
+  hints.push({ de: `Datum mit Ordinalzahl: „am ${dW}" = der ${d}.`, zh: `日期用序数词：am ${dW} = ${d} 号` });
+  if (!byName) hints.push({ de: `Der Monat als Zahl: „${mW}" = ${mo}. Monat.`, zh: `月份也可以用序数词说：${mW} = ${mo} 月` });
+  if (mW === 'Jänner') hints.push({ de: 'Jänner ist das österreichische Wort für Januar.', zh: 'Jänner = Januar（奥地利说法）' });
+  if (mW === 'Feber') hints.push({ de: 'Feber sagt man in Österreich umgangssprachlich für Februar.', zh: 'Feber = Februar（奥地利口语）' });
+  if (byName && (mo === 6 || mo === 7)) hints.push({ de: 'Juni (6) und Juli (7) klingen fast gleich. Manche sagen deshalb „Juno" und „Julei".', zh: 'Juni（6月）和 Juli（7月）发音很像，要仔细听。' });
+  addNumNotes(hints, dW);
+  return {
+    core, coreAlone: 'am ' + core, tpl: TPL.date[region], answer,
+    options: buildOptions(answer, T, () => D(chance(.5) ? ri(1, 28) : d, chance(.5) ? ri(1, 12) : mo)),
+    check: s => { const p = parseDate(s); return !!p && p[0] === d && p[1] === mo; },
+    hints, parts: [{ w: dW, d: d + '.' }, { w: mW, d: mo + '.' + (byName ? ' (' + MONTH_ZH[mo - 1] + ')' : '') }],
+    kind: byName ? 'Datum mit Monatsnamen' : 'Datum mit Monatszahl', ph: 'z. B. 23.3.', im: 'decimal'
+  };
+}
+
+const GEN = { time: genTime, phone: genPhone, number: genNumber, price: genPrice, date: genDate };
+const MODES = [
+  ['time', 'Uhrzeit', '时间', '--:--'],
+  ['phone', 'Telefon', '电话号码', '---- --- ----'],
+  ['number', 'Zahlen', '数字', '-----'],
+  ['price', 'Preise', '价格', '--,-- €'],
+  ['date', 'Datum', '日期', '--.--.'],
+  ['mix', 'Mix', '混合', '-----']
+];
+const MODE = Object.fromEntries(MODES.map(m => [m[0], { de: m[1], zh: m[2], blank: m[3] }]));
+
+/* ---------- voices ---------- */
+let VOICES = [];
+const hasTTS = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
+const vRegion = v => { const l = v.lang.toUpperCase().replace('_', '-'); return l.endsWith('-AT') ? 'AT' : l.endsWith('-CH') ? 'CH' : 'DE'; };
+const vScore = v => /natural|neural|premium|enhanced|online/i.test(v.name) ? 2 : /google/i.test(v.name) ? 1 : 0;
+function loadVoices() {
+  if (!hasTTS) return;
+  VOICES = speechSynthesis.getVoices().filter(v => /^de([-_]|$)/i.test(v.lang));
+  renderVoiceSelect();
+}
+function chooseVoice(region) {
+  if (!VOICES.length) return null;
+  if (settings.voice !== 'auto' && settings.voice !== 'random') {
+    const v = VOICES.find(x => x.voiceURI === settings.voice); if (v) return v;
+  }
+  let pool = settings.voice === 'random' ? VOICES : VOICES.filter(v => vRegion(v) === region);
+  if (!pool.length) pool = VOICES.filter(v => vRegion(v) === 'DE');
+  if (!pool.length) pool = VOICES;
+  const best = Math.max(...pool.map(vScore));
+  return pick(pool.filter(v => vScore(v) === best));
+}
+function renderVoiceSelect() {
+  const sel = $('#voice');
+  const groups = { AT: [], DE: [], CH: [] };
+  VOICES.forEach(v => groups[vRegion(v)].push(v));
+  let html = '<option value="auto">Automatisch, passend zur Region</option><option value="random">Zufällig, alle deutschen Stimmen</option>';
+  const lab = { AT: 'Österreich (de-AT)', DE: 'Deutschland (de-DE)', CH: 'Schweiz (de-CH)' };
+  for (const k of ['AT', 'DE', 'CH']) {
+    if (!groups[k].length) continue;
+    html += `<optgroup label="${lab[k]}">` + groups[k].map(v => `<option value="${esc(v.voiceURI)}">${esc(v.name)}</option>`).join('') + '</optgroup>';
+  }
+  sel.innerHTML = html;
+  sel.value = [...sel.options].some(o => o.value === settings.voice) ? settings.voice : 'auto';
+  const st = $('#voiceStatus');
+  if (!hasTTS) { st.textContent = 'Dieser Browser hat keine Sprachausgabe. Öffne die Seite in Edge, Chrome oder Safari.'; return; }
+  if (!VOICES.length) { st.textContent = 'Noch keine deutsche Stimme gefunden. Falls nichts zu hören ist: in den Systemeinstellungen eine deutsche Sprachausgabe installieren oder Microsoft Edge verwenden.'; return; }
+  let t = `Gefunden: ${groups.AT.length} österreichische, ${groups.DE.length} deutsche, ${groups.CH.length} Schweizer Stimme${VOICES.length === 1 ? '' : 'n'}.`;
+  if (!groups.AT.length) t += ' Österreichische Stimmen (Ingrid, Jonas) gibt es z. B. in Microsoft Edge. Bis dahin klingen die österreichischen Sätze mit einer deutschen Stimme.';
+  st.textContent = t;
+}
+
+/* ---------- audio ---------- */
+let actx = null, noiseSrc = null, speakId = 0, guardTimer = null;
+function startNoise() {
+  if (!settings.noise) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === 'suspended') actx.resume();
+    stopNoise();
+    const len = actx.sampleRate * 2, buf = actx.createBuffer(1, len, actx.sampleRate), d = buf.getChannelData(0);
+    let last = 0;
+    for (let i = 0; i < len; i++) { const w = Math.random() * 2 - 1; last = (last + .02 * w) / 1.02; d[i] = last * 3.5 + w * .04; }
+    const src = actx.createBufferSource(); src.buffer = buf; src.loop = true;
+    const g = actx.createGain(); g.gain.value = .32;
+    src.connect(g); g.connect(actx.destination); src.start();
+    noiseSrc = src;
+  } catch (e) { /* audio unavailable */ }
+}
+function stopNoise() { try { noiseSrc && noiseSrc.stop(); } catch (e) {} noiseSrc = null; }
+function setSpeaking(on) { $('#play').classList.toggle('speaking', on); }
+function speak(text, voiceURI, rate, pitch) {
+  if (!hasTTS) { showWarn('Dieser Browser kann keinen Text vorlesen. Bitte Microsoft Edge, Chrome oder Safari verwenden.'); return; }
+  const id = ++speakId;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  const v = VOICES.find(x => x.voiceURI === voiceURI);
+  if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'de-DE';
+  u.rate = Math.max(.5, Math.min(1.6, rate));
+  u.pitch = pitch || 1;
+  const done = () => { if (id !== speakId) return; stopNoise(); setSpeaking(false); };
+  u.onend = done; u.onerror = done;
+  startNoise(); setSpeaking(true);
+  clearTimeout(guardTimer); guardTimer = setTimeout(done, 25000);
+  setTimeout(() => { if (id !== speakId) return; try { speechSynthesis.resume(); } catch (e) {} speechSynthesis.speak(u); }, 80);
+}
+function showWarn(t) { const w = $('#ttsWarn'); w.textContent = t; w.hidden = false; }
+
+/* ---------- state ---------- */
+const DEFAULTS = { mode: 'time', region: 'mix', voice: 'auto', rate: 1, answer: 'mc', context: true, noise: false, zh: true };
+let settings = { ...DEFAULTS };
+const state = { q: null, answered: false, played: false, t0: 0, score: 0, streak: 0, best: 0, stats: {}, history: [] };
+const STORE = 'zahlenohr.v1';
+function save() {
+  try { localStorage.setItem(STORE, JSON.stringify({ settings, best: state.best, stats: state.stats })); } catch (e) {}
+}
+function load() {
+  try { const d = JSON.parse(localStorage.getItem(STORE) || 'null'); if (d) { settings = { ...DEFAULTS, ...d.settings }; state.best = d.best || 0; state.stats = d.stats || {}; } } catch (e) {}
+}
+
+/* ---------- rendering ---------- */
+function renderModes() {
+  $('#modes').innerHTML = MODES.map(m => `<button type="button" data-mode="${m[0]}" aria-pressed="${settings.mode === m[0]}">${m[1]} <span class="zh">${m[2]}</span></button>`).join('');
+}
+function renderSettings() {
+  document.querySelectorAll('#regionSeg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === settings.region));
+  document.querySelectorAll('#answerSeg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === settings.answer));
+  $('#rate').value = settings.rate; $('#rateVal').textContent = (+settings.rate).toFixed(2) + '×';
+  $('#ctx').checked = settings.context; $('#noise').checked = settings.noise; $('#zh').checked = settings.zh;
+  document.body.classList.toggle('nozh', !settings.zh);
+}
+function renderScores() {
+  $('#score').textContent = state.score; $('#streak').textContent = state.streak; $('#best').textContent = state.best;
+}
+function renderBoard(str, reveal) {
+  const el = $('#tiles');
+  const chars = [...str];
+  el.style.setProperty('--n', Math.max(chars.length, 5));
+  let i = 0;
+  el.innerHTML = chars.map(ch => {
+    if (ch === ' ') return '<span class="tile gap"></span>';
+    const isDigit = /\d/.test(ch);
+    const cls = 'tile' + (isDigit ? '' : ' sym') + (reveal ? ' rev' : '') + (!reveal && ch === '-' ? ' dim' : '');
+    return `<span class="${cls}" style="--i:${i++}">${esc(reveal || !isDigit ? (ch === '-' && !reveal ? '·' : ch) : '·')}</span>`;
+  }).join('');
+}
+function renderStats() {
+  $('#stats').innerHTML = MODES.filter(m => m[0] !== 'mix').map(m => {
+    const s = state.stats[m[0]] || { r: 0, t: 0 };
+    const pc = s.t ? Math.round(s.r / s.t * 100) : 0;
+    return `<li><span>${m[1]} <span class="zh">${m[2]}</span></span><span class="bar"><i style="width:${pc}%"></i></span><span class="n">${s.r}/${s.t}</span></li>`;
+  }).join('');
+}
+const SPEAKER = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
+function renderHistory() {
+  const h = state.history;
+  $('#histEmpty').hidden = h.length > 0;
+  $('#history').innerHTML = h.map((e, i) => `<li>
+    <span class="s ${e.ok ? 'ok' : 'bad'}" aria-label="${e.ok ? 'richtig' : 'falsch'}">${e.ok ? '✓' : '✗'}</span>
+    <span><span class="a">${esc(e.answer)}</span>${e.ok ? '' : ` <span class="zh">你选了 ${esc(e.user || '–')}</span>`}<span class="t">${esc(e.text)}</span></span>
+    <button type="button" data-h="${i}" aria-label="Noch einmal anhören">${SPEAKER}</button>
+  </li>`).join('');
+}
+
+function newQuestion(auto) {
+  const mode = settings.mode === 'mix' ? pick(['time', 'phone', 'number', 'price', 'date']) : settings.mode;
+  const region = settings.region === 'mix' ? (chance(.5) ? 'AT' : 'DE') : settings.region;
+  const q = GEN[mode](region);
+  q.mode = mode; q.region = region;
+  q.text = settings.context ? pick(q.tpl).replace('{x}', q.core) : (q.coreAlone || q.core);
+  const v = chooseVoice(region);
+  q.voiceURI = v ? v.voiceURI : null;
+  q.rateJ = 1 + (R() - .5) * .08;
+  q.pitch = .94 + R() * .12;
+  state.q = q; state.answered = false; state.played = false; state.t0 = 0;
+
+  $('#boardMode').innerHTML = `${MODE[mode].de} <span class="zh">${MODE[mode].zh}</span>`;
+  $('#boardRegion').textContent = region === 'AT' ? 'Österreich' : 'Deutschland';
+  renderBoard(MODE[mode].blank, false);
+  $('#feedback').hidden = true;
+  $('#replay').disabled = true; $('#slow').disabled = true;
+  $('#promptNote').hidden = false;
+
+  const opts = $('#options');
+  const isMC = settings.answer === 'mc';
+  opts.hidden = !isMC; $('#textForm').hidden = isMC;
+  if (isMC) {
+    opts.className = 'options locked' + (q.answer.length > 11 ? ' long' : '');
+    opts.innerHTML = q.options.map((o, i) => `<button type="button" class="opt" data-v="${esc(o)}" disabled><span class="k">${i + 1}</span><span>${esc(o)}</span></button>`).join('');
+  } else {
+    const inp = $('#txt');
+    inp.value = ''; inp.className = ''; inp.placeholder = q.ph; inp.setAttribute('inputmode', q.im); inp.disabled = true;
+    $('#txtBtn').disabled = true;
+  }
+  if (auto) play(false);
+}
+
+function unlock() {
+  if (state.played) return;
+  state.played = true; state.t0 = performance.now();
+  $('#replay').disabled = false; $('#slow').disabled = false;
+  $('#promptNote').hidden = true;
+  if (settings.answer === 'mc') {
+    $('#options').classList.remove('locked');
+    document.querySelectorAll('#options .opt').forEach(b => b.disabled = false);
+  } else {
+    $('#txt').disabled = false; $('#txtBtn').disabled = false;
+    setTimeout(() => $('#txt').focus(), 50);
+  }
+}
+function play(slow) {
+  const q = state.q; if (!q) return;
+  if (!state.answered) unlock();
+  speak(q.text, q.voiceURI, settings.rate * q.rateJ * (slow ? .7 : 1), q.pitch);
+}
+
+function submit(val) {
+  const q = state.q;
+  if (!q || state.answered || !state.played) return;
+  if (settings.answer === 'text' && !String(val).trim()) return;
+  const ok = settings.answer === 'mc' ? val === q.answer : q.check(val);
+  state.answered = true;
+  const secs = (performance.now() - state.t0) / 1000;
+  let gained = 0;
+  if (ok) { gained = 10 + Math.max(0, Math.min(10, Math.round(14 - secs))); state.score += gained; state.streak++; state.best = Math.max(state.best, state.streak); }
+  else state.streak = 0;
+  const s = state.stats[q.mode] || (state.stats[q.mode] = { r: 0, t: 0 });
+  s.t++; if (ok) s.r++;
+  state.history.unshift({ ok, answer: q.answer, user: String(val), text: q.text, voiceURI: q.voiceURI, rate: q.rateJ, pitch: q.pitch });
+  state.history = state.history.slice(0, 12);
+  save();
+
+  if (settings.answer === 'mc') {
+    const opts = $('#options'); opts.classList.add('done');
+    opts.querySelectorAll('.opt').forEach(b => {
+      b.disabled = true;
+      if (b.dataset.v === q.answer) b.classList.add('correct');
+      else if (b.dataset.v === val) b.classList.add('wrong');
+    });
+  } else {
+    $('#txt').disabled = true; $('#txtBtn').disabled = true; $('#txt').classList.add(ok ? 'ok' : 'bad');
+  }
+  renderBoard(q.answer, true);
+
+  const vd = $('#verdict');
+  vd.className = 'verdict ' + (ok ? 'ok' : 'bad');
+  vd.innerHTML = ok
+    ? `Richtig! +${gained} <span class="zh">答对了</span>`
+    : `Leider nicht. Richtig ist ${esc(q.answer)}.<span class="zh">答错了</span>`;
+  const i = q.text.indexOf(q.core);
+  $('#transcript').innerHTML = '„' + (i >= 0 ? esc(q.text.slice(0, i)) + '<mark>' + esc(q.core) + '</mark>' + esc(q.text.slice(i + q.core.length)) : esc(q.text)) + '"';
+  $('#parts').innerHTML = q.parts.map(p => `<span class="part"><span class="w">${esc(p.w)}</span><span class="d">${esc(p.d)}</span></span>`).join('');
+  $('#parts').hidden = !q.parts.length;
+  $('#hints').innerHTML = q.hints.map(h => `<li><span>${esc(h.de)}</span><span class="zh">${esc(h.zh)}</span></li>`).join('');
+  const v = VOICES.find(x => x.voiceURI === q.voiceURI);
+  const regTxt = q.region === 'AT' ? 'österreichische Formulierung' : 'deutsche Formulierung';
+  $('#voiceinfo').textContent = `${MODE[q.mode].de}, ${q.kind} · ${regTxt} · Stimme: ${v ? v.name + ' (' + v.lang + ')' : 'Standardstimme des Browsers'}`;
+  $('#feedback').hidden = false;
+  renderScores(); renderStats(); renderHistory();
+  setTimeout(() => $('#next').focus({ preventScroll: true }), 30);
+}
+
+/* ---------- events ---------- */
+function bind() {
+  $('#modes').addEventListener('click', e => {
+    const b = e.target.closest('button[data-mode]'); if (!b) return;
+    settings.mode = b.dataset.mode; save(); renderModes(); newQuestion(false);
+  });
+  $('#play').addEventListener('click', () => play(false));
+  $('#replay').addEventListener('click', () => play(false));
+  $('#replay2').addEventListener('click', () => play(false));
+  $('#slow').addEventListener('click', () => play(true));
+  $('#next').addEventListener('click', () => newQuestion(true));
+  $('#options').addEventListener('click', e => { const b = e.target.closest('.opt'); if (b && !b.disabled) submit(b.dataset.v); });
+  $('#textForm').addEventListener('submit', e => { e.preventDefault(); submit($('#txt').value); });
+  $('#regionSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; settings.region = b.dataset.v; save(); renderSettings(); newQuestion(false); });
+  $('#answerSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; settings.answer = b.dataset.v; save(); renderSettings(); newQuestion(false); });
+  $('#voice').addEventListener('change', e => { settings.voice = e.target.value; save(); if (state.q && !state.answered) { const v = chooseVoice(state.q.region); state.q.voiceURI = v ? v.voiceURI : null; } });
+  $('#rate').addEventListener('input', e => { settings.rate = +e.target.value; $('#rateVal').textContent = settings.rate.toFixed(2) + '×'; save(); });
+  $('#ctx').addEventListener('change', e => { settings.context = e.target.checked; save(); newQuestion(false); });
+  $('#noise').addEventListener('change', e => { settings.noise = e.target.checked; save(); if (!settings.noise) stopNoise(); });
+  $('#zh').addEventListener('change', e => { settings.zh = e.target.checked; save(); renderSettings(); });
+  $('#history').addEventListener('click', e => {
+    const b = e.target.closest('button[data-h]'); if (!b) return;
+    const h = state.history[+b.dataset.h]; if (h) speak(h.text, h.voiceURI, settings.rate * h.rate, h.pitch);
+  });
+  document.addEventListener('keydown', e => {
+    const tag = (e.target.tagName || '').toLowerCase();
+    if (tag === 'input' || tag === 'select' || tag === 'textarea') return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key === ' ') { e.preventDefault(); play(false); }
+    else if (e.key === 'l' || e.key === 'L') play(true);
+    else if (e.key === 'Enter' && state.answered && tag !== 'button') { e.preventDefault(); newQuestion(true); }
+    else if (/^[1-4]$/.test(e.key) && settings.answer === 'mc' && !state.answered && state.played) {
+      const b = document.querySelectorAll('#options .opt')[+e.key - 1]; if (b) submit(b.dataset.v);
+    }
+  });
+  if (hasTTS) {
+    loadVoices();
+    speechSynthesis.addEventListener ? speechSynthesis.addEventListener('voiceschanged', loadVoices) : (speechSynthesis.onvoiceschanged = loadVoices);
+    setTimeout(loadVoices, 600); setTimeout(loadVoices, 2000);
+  } else {
+    renderVoiceSelect();
+    showWarn('Dieser Browser kann keinen Text vorlesen. Bitte Microsoft Edge, Chrome oder Safari verwenden.');
+  }
+}
+
+function start(data) {
+  load();
+  if (data && data.settings) {
+    settings = { ...DEFAULTS, ...data.settings };
+    state.score = data.score || 0; state.streak = data.streak || 0;
+    state.best = Math.max(state.best, data.best || 0);
+    state.stats = data.stats || state.stats; state.history = data.history || [];
+  }
+  renderModes(); renderSettings(); renderScores(); renderStats(); renderHistory(); renderVoiceSelect();
+  bind();
+  newQuestion(false);
+}
+window.__zahlenohr = { GEN };
+try { window.claude?.hot?.snapshot?.(() => ({ settings, score: state.score, streak: state.streak, best: state.best, stats: state.stats, history: state.history })); } catch (e) {}
+window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
+})();
+</script>
+</body>
+</html>
