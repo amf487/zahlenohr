@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
 <style>
-/* Layout: one "listening station" card with a departure-board readout as its centrepiece; settings, progress and log sit in a side rail (stacked below on phones). */
+/* Layout: one narrow column, four screens (start, game, result, settings). The departure-board readout is the centrepiece of the game screen. */
 :root {
   --paper: #ECEFF3;
   --surface: #FFFFFF;
@@ -66,66 +66,101 @@ button { cursor: pointer; }
 :focus-visible { outline: 3px solid var(--signal); outline-offset: 2px; }
 
 .app {
-  max-width: 1100px;
+  max-width: 660px;
   margin: 0 auto;
-  padding-block: 20px 48px;
+  padding-block: 16px 48px;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
   display: grid;
-  gap: 18px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
 }
+.screen { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
 
 .zh { font-family: var(--f-zh); font-size: .82em; color: var(--muted); font-weight: 400; }
 body.nozh .zh { display: none !important; }
 
 /* header */
-.top { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 20px; }
-.brand h1 {
-  margin: 0;
-  font-family: var(--f-display);
-  font-weight: 700;
-  font-size: clamp(34px, 6vw, 46px);
-  line-height: 1;
-  letter-spacing: -.01em;
-  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.brand {
+  border: 0; background: none; padding: 0;
+  font-family: var(--f-display); font-weight: 700; font-size: 30px; line-height: 1; letter-spacing: -.01em;
+  display: flex; align-items: baseline; gap: 8px;
 }
-.brand h1 .zh { font-size: 17px; letter-spacing: .04em; }
-.brand p { margin: 6px 0 0; color: var(--muted); max-width: 60ch; }
-.scores { display: flex; gap: 8px; }
-.pill {
-  display: grid; justify-items: center;
-  min-width: 78px; padding: 6px 12px;
-  border: 1px solid var(--line); border-radius: 10px; background: var(--surface);
+.brand .zh { font-size: 15px; letter-spacing: .04em; white-space: nowrap; }
+@media (max-width: 420px) { .brand .zh { display: none; } }
+.icon-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 14px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface);
+  font-size: 15px;
 }
-.pill span { font-family: var(--f-display); text-transform: uppercase; letter-spacing: .1em; font-size: 12px; color: var(--muted); }
-.pill b { font-family: var(--f-mono); font-size: 22px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.icon-btn svg, .ghost svg, .back svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.icon-btn:hover, .ghost:hover, .chip:hover, .seg button:hover { border-color: var(--ink); }
 
-/* mode tabs */
-.modes { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; }
-.modes button {
-  flex: 0 0 auto;
-  display: flex; align-items: baseline; gap: 6px;
-  padding: 9px 16px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  background: var(--surface);
-  font-family: var(--f-display); font-weight: 600; font-size: 18px; letter-spacing: .02em;
-}
-.modes button[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
-.modes button[aria-pressed="true"] .zh { color: inherit; opacity: .75; }
-
-.layout { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 18px; align-items: start; }
-@media (max-width: 880px) { .layout { grid-template-columns: minmax(0, 1fr); } }
-
-/* station */
-.station {
+.card {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 16px;
-  padding: clamp(16px, 3vw, 28px);
+  padding: clamp(16px, 3.5vw, 26px);
   display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px;
   min-width: 0;
 }
+.card h2 { margin: 0; font-family: var(--f-display); font-weight: 700; font-size: 20px; text-transform: uppercase; letter-spacing: .06em; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+.card h2 .zh { text-transform: none; letter-spacing: 0; font-size: 14px; }
+.card h2 .sub { font-family: var(--f-body); text-transform: none; letter-spacing: 0; font-weight: 400; font-size: 14px; color: var(--muted); }
+
+.intro h1 { margin: 0; font-family: var(--f-display); font-weight: 700; font-size: clamp(30px, 7vw, 40px); line-height: 1.05; text-wrap: balance; }
+.intro p { margin: 6px 0 0; color: var(--muted); max-width: 60ch; }
+
+.field { display: grid; gap: 8px; }
+.flabel { font-weight: 700; font-size: 15px; display: flex; gap: 6px; align-items: baseline; }
+.note { margin: 0; font-size: 14px; color: var(--muted); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  display: flex; align-items: baseline; gap: 6px;
+  padding: 9px 16px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--paper);
+  font-family: var(--f-display); font-weight: 600; font-size: 18px; letter-spacing: .02em;
+}
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.chip[aria-pressed="true"] .zh { color: inherit; opacity: .75; }
+
+.seg { display: flex; border: 1px solid var(--line); border-radius: 999px; padding: 3px; gap: 2px; background: var(--paper); }
+.seg button { flex: 1; border: 1px solid transparent; background: transparent; border-radius: 999px; padding: 8px 8px; color: var(--muted); font-size: 15px; white-space: nowrap; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+.seg button[aria-pressed="true"] .zh { color: inherit; opacity: .75; }
+.seg.big button { font-family: var(--f-display); font-weight: 600; font-size: 19px; padding: 10px 8px; }
+
+.start {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  padding: 14px 24px; border: 0; border-radius: 999px;
+  background: var(--signal); color: var(--signal-ink);
+  font-family: var(--f-display); font-weight: 700; font-size: 26px; letter-spacing: .02em;
+}
+.start .zh { color: var(--signal-ink); opacity: .7; }
+.start svg { width: 20px; height: 20px; fill: currentColor; }
+
+.hs { margin: 0; padding: 0; list-style: none; display: grid; gap: 0; counter-reset: hs; }
+.hs li { counter-increment: hs; display: grid; grid-template-columns: 28px 1fr auto; gap: 10px; align-items: baseline; padding: 8px 0; border-top: 1px solid var(--line); }
+.hs li:first-child { border-top: 0; }
+.hs li::before { content: counter(hs) "."; font-family: var(--f-mono); color: var(--muted); font-size: 14px; }
+.hs .pts { font-family: var(--f-mono); font-weight: 700; font-size: 18px; font-variant-numeric: tabular-nums; }
+.hs .when { color: var(--muted); font-size: 14px; }
+.hs li.fresh { background: var(--mark); border-radius: 8px; padding-inline: 8px; margin-inline: -8px; }
+.empty { margin: 0; color: var(--muted); font-size: 14px; }
+
+/* game */
+.gamebar { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px; }
+.gamebar .qc { font-family: var(--f-display); font-weight: 600; font-size: 18px; white-space: nowrap; }
+.gamebar .qc b, .gamebar .sc b { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.gamebar .sc { font-family: var(--f-display); font-weight: 600; font-size: 18px; white-space: nowrap; text-align: right; }
+.progress { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; }
+.progress i { height: 8px; border-radius: 4px; background: var(--line); }
+.progress i.cur { background: var(--ink); }
+.progress i.ok { background: var(--ok); }
+.progress i.bad { background: var(--bad); }
 
 .board {
   background: var(--board);
@@ -150,55 +185,48 @@ body.nozh .zh { display: none !important; }
   width: calc(var(--fs) * .76);
   height: calc(var(--fs) * 1.28);
   display: grid; place-items: center;
-  background: var(--tile);
-  color: var(--tile-fg);
+  background: var(--tile); color: var(--tile-fg);
   font-family: var(--f-mono); font-weight: 700; font-size: var(--fs);
   border-radius: 4px;
-  font-variant-numeric: tabular-nums;
 }
 .tile::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: var(--tile-line); }
 .tile.dim { color: var(--tile-dim); }
 .tile.sym { background: transparent; width: calc(var(--fs) * .5); }
-.tile.sym::after { display: none; }
+.tile.sym::after, .tile.gap::after { display: none; }
 .tile.gap { background: transparent; width: calc(var(--fs) * .3); }
-.tile.gap::after { display: none; }
-.tile.rev { animation: flip .38s cubic-bezier(.2,.7,.3,1) both; animation-delay: calc(var(--i) * 45ms); transform-origin: 50% 50%; }
+.tile.rev { animation: flip .38s cubic-bezier(.2,.7,.3,1) both; animation-delay: calc(var(--i) * 45ms); }
 @keyframes flip { from { transform: rotateX(-95deg); opacity: .2; } to { transform: none; opacity: 1; } }
 
-.meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--muted); font-size: 14px; }
-.badge {
-  font-family: var(--f-display); font-weight: 700; letter-spacing: .08em; font-size: 13px;
-  padding: 2px 8px; border-radius: 6px; border: 1.5px solid currentColor; color: var(--ink);
-}
+.timer { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; }
+.timer .t { font-family: var(--f-mono); font-weight: 700; font-size: 20px; font-variant-numeric: tabular-nums; min-width: 6.5ch; }
+.timer .bar { height: 10px; border-radius: 5px; background: var(--paper); border: 1px solid var(--line); overflow: hidden; }
+.timer .bar i { display: block; height: 100%; width: 100%; background: var(--signal); transition: width .1s linear; }
+.timer .pot { font-family: var(--f-display); font-weight: 600; font-size: 16px; color: var(--muted); white-space: nowrap; }
+.timer .pot b { font-family: var(--f-mono); color: var(--ink); font-variant-numeric: tabular-nums; }
+.timer.waiting .t { color: var(--muted); }
 
 .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 .play {
-  position: relative;
   display: flex; align-items: center; gap: 12px;
-  padding: 10px 22px 10px 10px;
+  padding: 8px 20px 8px 8px;
   border: 0; border-radius: 999px;
   background: var(--signal); color: var(--signal-ink);
-  font-family: var(--f-display); font-weight: 700; font-size: 22px; letter-spacing: .02em;
+  font-family: var(--f-display); font-weight: 700; font-size: 21px; letter-spacing: .02em;
 }
 .play .zh { color: var(--signal-ink); opacity: .7; }
-.play .disc { width: 42px; height: 42px; border-radius: 50%; background: var(--signal-ink); display: grid; place-items: center; }
-.play .disc svg { width: 18px; height: 18px; fill: var(--signal); margin-left: 3px; }
+.play .disc { width: 40px; height: 40px; border-radius: 50%; background: var(--signal-ink); display: grid; place-items: center; }
+.play .disc svg { width: 17px; height: 17px; fill: var(--signal); margin-left: 3px; }
 .play.speaking .disc { animation: pulse 1s ease-in-out infinite; }
-@keyframes pulse { 50% { transform: scale(.88); } }
+@keyframes pulse { 50% { transform: scale(.86); } }
 .ghost {
   display: flex; align-items: center; gap: 6px;
   padding: 10px 16px; border-radius: 999px;
   border: 1px solid var(--line); background: transparent;
   font-size: 15px;
 }
-.ghost:hover, .modes button:hover { border-color: var(--ink); }
-.ghost svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-
-.prompt-note { margin: -6px 0 0; color: var(--muted); font-size: 14px; }
 
 .options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .options.long { grid-template-columns: minmax(0, 1fr); }
-@media (min-width: 620px) { .options.long { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .opt {
   display: flex; align-items: center; gap: 12px;
   min-width: 0;
@@ -206,18 +234,18 @@ body.nozh .zh { display: none !important; }
   border: 1.5px solid var(--line); border-radius: 12px;
   background: var(--paper);
   text-align: left;
-  font-family: var(--f-mono); font-weight: 700; font-size: clamp(18px, 3.4vw, 24px);
+  font-family: var(--f-mono); font-weight: 700; font-size: clamp(18px, 3.6vw, 24px);
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
 }
 .opt .k { font-family: var(--f-display); font-size: 14px; font-weight: 600; color: var(--muted); border: 1px solid var(--line); border-radius: 5px; padding: 0 6px; flex: none; }
 .opt:not(:disabled):hover { border-color: var(--ink); }
 .opt:disabled { cursor: default; }
-.options.locked .opt { opacity: .45; }
-.opt.correct { background: var(--ok-soft); border-color: var(--ok); color: var(--ink); opacity: 1 !important; }
-.opt.wrong { background: var(--bad-soft); border-color: var(--bad); opacity: 1 !important; }
+.opt.correct { background: var(--ok-soft); border-color: var(--ok); }
+.opt.wrong { background: var(--bad-soft); border-color: var(--bad); }
 .options.done .opt:not(.correct):not(.wrong) { opacity: .45; }
 
+.input-tag { font-family: var(--f-display); text-transform: uppercase; letter-spacing: .1em; font-size: 13px; color: var(--muted); margin-bottom: -10px; }
 .textans { display: flex; gap: 10px; }
 .textans input {
   flex: 1; min-width: 0;
@@ -230,9 +258,10 @@ body.nozh .zh { display: none !important; }
 .textans input.ok { border-color: var(--ok); background: var(--ok-soft); }
 .textans input.bad { border-color: var(--bad); background: var(--bad-soft); }
 .primary {
-  padding: 12px 20px; border-radius: 12px; border: 0;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px 22px; border-radius: 999px; border: 0;
   background: var(--ink); color: var(--surface);
-  font-family: var(--f-display); font-weight: 700; font-size: 19px; letter-spacing: .03em;
+  font-family: var(--f-display); font-weight: 700; font-size: 20px; letter-spacing: .03em;
 }
 .primary .zh { color: inherit; opacity: .7; }
 
@@ -241,7 +270,7 @@ body.nozh .zh { display: none !important; }
 .verdict.ok { color: var(--ok); }
 .verdict.bad { color: var(--bad); }
 .verdict .zh { margin-left: 6px; }
-.transcript { margin: 0; font-size: 19px; line-height: 1.45; }
+.transcript { margin: 0; font-size: 18px; line-height: 1.45; }
 .transcript mark { background: var(--mark); color: var(--ink); padding: 0 3px; border-radius: 3px; }
 .label { font-family: var(--f-display); text-transform: uppercase; letter-spacing: .12em; font-size: 12px; color: var(--muted); display: block; margin-bottom: 2px; }
 .parts { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -251,101 +280,137 @@ body.nozh .zh { display: none !important; }
 .hints { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
 .hints li { padding-left: 12px; border-left: 3px solid var(--signal); display: grid; gap: 2px; }
 .hints .zh { font-size: 15px; color: var(--ink); opacity: .85; }
-.voiceinfo { margin: 0; color: var(--muted); font-size: 13px; }
-.next-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 
-.keys { margin: 0; color: var(--muted); font-size: 13px; }
+.quit { justify-self: center; border: 0; background: none; color: var(--muted); font-size: 14px; text-decoration: underline; text-underline-offset: 3px; padding: 6px; }
+.quit.armed { color: var(--bad); font-weight: 700; }
+
+.keys { margin: 0; color: var(--muted); font-size: 13px; text-align: center; }
 .keys kbd { font-family: var(--f-mono); font-size: 12px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; }
 @media (hover: none) { .keys { display: none; } }
-
 .warn { margin: 0; padding: 10px 14px; border-radius: 10px; background: var(--bad-soft); color: var(--ink); font-size: 14px; }
 
-/* side rail */
-.side { display: grid; gap: 14px; min-width: 0; }
-.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; display: grid; gap: 14px; min-width: 0; }
-.panel h2 { margin: 0; font-family: var(--f-display); font-weight: 700; font-size: 20px; text-transform: uppercase; letter-spacing: .06em; display: flex; gap: 8px; align-items: baseline; }
-.panel h2 .zh { text-transform: none; letter-spacing: 0; font-size: 14px; }
-.field { display: grid; gap: 6px; }
-.field > label, .field > .flabel { font-weight: 700; font-size: 14px; display: flex; gap: 6px; align-items: baseline; }
-.seg { display: flex; border: 1px solid var(--line); border-radius: 999px; padding: 3px; gap: 2px; }
-.seg button { flex: 1; border: 0; background: transparent; border-radius: 999px; padding: 7px 8px; color: var(--muted); font-size: 14px; white-space: nowrap; }
-.seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
-select { width: 100%; padding: 9px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--paper); font-size: 14px; }
+/* result */
+.result-head { text-align: center; justify-items: center; gap: 6px; }
+.big-score { font-family: var(--f-mono); font-weight: 700; font-size: clamp(56px, 16vw, 84px); line-height: 1; font-variant-numeric: tabular-nums; }
+.big-score small { font-size: .3em; color: var(--muted); font-weight: 500; }
+.record { margin: 4px 0 0; padding: 4px 14px; border-radius: 999px; background: var(--signal); color: var(--signal-ink); font-family: var(--f-display); font-weight: 700; font-size: 18px; letter-spacing: .04em; }
+.record .zh { color: var(--signal-ink); opacity: .7; }
+.summary { margin: 0; color: var(--muted); }
+.res { margin: 0; padding: 0; list-style: none; display: grid; }
+.res > li { display: grid; gap: 6px; padding: 12px 0; border-top: 1px solid var(--line); }
+.res > li:first-child { border-top: 0; padding-top: 0; }
+.res .row { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto auto; gap: 10px; align-items: center; }
+.res .n { font-family: var(--f-mono); color: var(--muted); font-size: 14px; }
+.res .a { font-family: var(--f-mono); font-weight: 700; font-size: 18px; overflow-wrap: anywhere; }
+.res .m { display: block; font-family: var(--f-body); font-weight: 400; font-size: 13px; color: var(--muted); }
+.res .p { font-family: var(--f-mono); font-weight: 700; font-size: 20px; min-width: 3ch; text-align: right; font-variant-numeric: tabular-nums; }
+.res li.ok .p { color: var(--ok); }
+.res li.bad .p { color: var(--bad); }
+.res .you { margin: 0 0 0 36px; font-size: 14px; color: var(--bad); }
+.res .you span { font-family: var(--f-mono); font-weight: 700; }
+.res .say { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--line); background: transparent; display: grid; place-items: center; }
+.res .say svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.res details { margin-left: 36px; }
+.res summary { cursor: pointer; font-size: 14px; color: var(--muted); }
+.res details[open] summary { margin-bottom: 8px; }
+.res details > div { display: grid; gap: 10px; }
+.btnrow { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+
+/* settings */
+.back { justify-self: start; display: flex; align-items: center; gap: 6px; border: 0; background: none; padding: 4px 0; font-size: 16px; font-weight: 700; }
 input[type="range"] { width: 100%; accent-color: var(--signal); }
 .rate-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); }
 .rate-row b { font-family: var(--f-mono); color: var(--ink); }
-.check { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; }
-.check input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--ink); flex: none; }
-.note { margin: 0; font-size: 13px; color: var(--muted); }
+select { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--paper); font-size: 15px; }
+.check { display: flex; gap: 10px; align-items: flex-start; font-size: 15px; }
+.check input { width: 18px; height: 18px; margin-top: 3px; accent-color: var(--ink); flex: none; }
+.danger { justify-self: start; border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 8px 16px; font-size: 14px; color: var(--muted); }
+.danger.armed { border-color: var(--bad); color: var(--bad); font-weight: 700; }
 
-.stats { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
-.stats li { display: grid; grid-template-columns: 84px 1fr 52px; align-items: center; gap: 10px; font-size: 14px; }
-.stats .bar { height: 8px; border-radius: 4px; background: var(--paper); border: 1px solid var(--line); overflow: hidden; }
-.stats .bar i { display: block; height: 100%; background: var(--ok); }
-.stats .n { font-family: var(--f-mono); font-size: 13px; text-align: right; color: var(--muted); }
-
-.history { margin: 0; padding: 0; list-style: none; display: grid; gap: 2px; }
-.history li { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 8px; align-items: start; padding: 8px 0; border-top: 1px solid var(--line); }
-.history li:first-child { border-top: 0; }
-.history .s { font-weight: 700; font-size: 16px; line-height: 1.4; }
-.history .s.ok { color: var(--ok); }
-.history .s.bad { color: var(--bad); }
-.history .a { font-family: var(--f-mono); font-weight: 700; }
-.history .t { display: block; font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
-.history button { border: 1px solid var(--line); background: transparent; border-radius: 8px; width: 34px; height: 34px; display: grid; place-items: center; }
-.history button svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.empty { margin: 0; color: var(--muted); font-size: 14px; }
-
+@media (max-width: 420px) {
+  .seg button { font-size: 14px; padding: 8px 4px; }
+  .seg.big button { font-size: 17px; }
+}
 @media (prefers-reduced-motion: reduce) {
   .tile.rev, .play.speaking .disc { animation: none; }
+  .timer .bar i { transition: none; }
 }
 </style>
 </head>
 <body>
-
 <div class="app">
   <header class="top">
-    <div class="brand">
-      <h1>Zahlenohr <span class="zh">德语数字听力</span></h1>
-      <p>Hör zu, dann tipp die Zahl an, die du gehört hast. Uhrzeiten, Telefonnummern, Preise und Daten, auf Deutsch und Österreichisch. <span class="zh">听德语，选出你听到的数字。</span></p>
-    </div>
-    <div class="scores" aria-live="polite">
-      <div class="pill"><span>Punkte</span><b id="score">0</b></div>
-      <div class="pill"><span>Serie</span><b id="streak">0</b></div>
-      <div class="pill"><span>Rekord</span><b id="best">0</b></div>
-    </div>
+    <button class="brand" id="home" type="button">Zahlenohr <span class="zh">德语数字听力</span></button>
+    <button class="icon-btn" id="openSettings" type="button">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+      Einstellungen
+    </button>
   </header>
 
-  <nav class="modes" id="modes" aria-label="Übungsart"></nav>
+  <!-- START -->
+  <section class="screen" id="screenStart">
+    <div class="intro">
+      <h1>Hör genau hin: Uhrzeiten, Telefonnummern, Preise.</h1>
+      <p>10 Fragen pro Runde. Je schneller du richtig antwortest, desto mehr Punkte. <span class="zh">每轮 10 题，答得越快分数越高。</span></p>
+    </div>
+    <div class="card">
+      <div class="field">
+        <span class="flabel">Was willst du üben? <span class="zh">练习内容</span></span>
+        <div class="chips" id="modes"></div>
+      </div>
+      <div class="field">
+        <span class="flabel">Schwierigkeit <span class="zh">难度</span></span>
+        <div class="seg big" id="diffSeg"></div>
+        <p class="note" id="diffNote"></p>
+      </div>
+      <button class="start" id="startBtn" type="button">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 1.5v13l11-6.5z"/></svg>
+        Spiel starten <span class="zh">开始</span>
+      </button>
+    </div>
+    <div class="card">
+      <h2>Bestenliste <span class="zh">最高分</span> <span class="sub" id="hsLabel"></span></h2>
+      <ol class="hs" id="hsList"></ol>
+      <p class="empty" id="hsEmpty">Noch keine Runde in dieser Kombination gespielt. Dein erstes Ergebnis landet hier. <span class="zh">还没有成绩。</span></p>
+    </div>
+  </section>
 
-  <div class="layout">
-    <main class="station">
-      <div class="board" id="board">
+  <!-- GAME -->
+  <section class="screen" id="screenGame" hidden>
+    <div class="gamebar">
+      <span class="qc">Frage <b id="qNum">1</b>/10</span>
+      <div class="progress" id="progress" aria-hidden="true"></div>
+      <span class="sc"><b id="runScore">0</b> Pkt.</span>
+    </div>
+    <div class="card">
+      <div class="board">
         <div class="board-head"><span id="boardMode">Uhrzeit</span><span id="boardRegion"></span></div>
         <div class="tiles" id="tiles"></div>
+      </div>
+
+      <div class="timer waiting" id="timer">
+        <span class="t" id="timerTxt">0,0 s</span>
+        <span class="bar"><i id="timerBar"></i></span>
+        <span class="pot"><b id="potTxt">100</b> <span id="potLbl">Pkt. möglich</span></span>
       </div>
 
       <div class="controls">
         <button class="play" id="play" type="button">
           <span class="disc"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 1.5v13l11-6.5z"/></svg></span>
-          <span>Anhören <span class="zh">听</span></span>
+          <span id="playLabel">Anhören <span class="zh">听</span></span>
         </button>
-        <button class="ghost" id="replay" type="button" disabled>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v5h5"/></svg>
-          Nochmal <span class="zh">再听</span>
-        </button>
-        <button class="ghost" id="slow" type="button" disabled>
+        <button class="ghost" id="slow" type="button">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h10"/><path d="M10 7l5 5-5 5"/><path d="M19 6v12"/></svg>
           Langsam <span class="zh">慢速</span>
         </button>
       </div>
       <p class="warn" id="ttsWarn" hidden></p>
-      <p class="prompt-note" id="promptNote">Erst anhören, dann antworten. <span class="zh">先听，再回答。</span></p>
 
-      <div class="options locked" id="options"></div>
+      <div class="options" id="options"></div>
+      <span class="input-tag" id="inputTag" hidden>Eintippen <span class="zh">输入答案</span></span>
       <form class="textans" id="textForm" hidden autocomplete="off">
-        <input id="txt" type="text" aria-label="Deine Antwort" disabled>
-        <button class="primary" type="submit" id="txtBtn" disabled>Prüfen <span class="zh">检查</span></button>
+        <input id="txt" type="text" aria-label="Deine Antwort">
+        <button class="primary" type="submit" id="txtBtn">Prüfen <span class="zh">检查</span></button>
       </form>
 
       <section class="feedback" id="feedback" hidden aria-live="polite">
@@ -356,64 +421,65 @@ input[type="range"] { width: 100%; accent-color: var(--signal); }
         </div>
         <div class="parts" id="parts"></div>
         <ul class="hints" id="hints"></ul>
-        <p class="voiceinfo" id="voiceinfo"></p>
-        <div class="next-row">
-          <button class="primary" id="next" type="button">Weiter <span class="zh">下一题</span> →</button>
-          <button class="ghost" id="replay2" type="button">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v5h5"/></svg>
-            Nochmal anhören
-          </button>
-        </div>
+        <div><button class="primary" id="next" type="button">Weiter <span class="zh">下一题</span> →</button></div>
       </section>
+    </div>
+    <button class="quit" id="quit" type="button">Runde abbrechen</button>
+    <p class="keys"><kbd>Leertaste</kbd> nochmal · <kbd>L</kbd> langsam · <kbd>1</kbd>–<kbd>4</kbd> antworten · <kbd>Enter</kbd> weiter</p>
+  </section>
 
-      <p class="keys">Tastatur: <kbd>Leertaste</kbd> anhören · <kbd>L</kbd> langsam · <kbd>1</kbd>–<kbd>4</kbd> antworten · <kbd>Enter</kbd> weiter</p>
-    </main>
+  <!-- RESULT -->
+  <section class="screen" id="screenResult" hidden>
+    <div class="card result-head">
+      <span class="label" id="resLabel">Ergebnis</span>
+      <div class="big-score"><span id="resTotal">0</span><small> / 1000</small></div>
+      <p class="record" id="resRecord" hidden></p>
+      <p class="summary" id="resSummary"></p>
+    </div>
+    <div class="card">
+      <h2>Deine Antworten <span class="zh">每题得分</span></h2>
+      <ol class="res" id="resList"></ol>
+    </div>
+    <div class="btnrow">
+      <button class="start" id="again" type="button">Nochmal spielen <span class="zh">再玩一次</span></button>
+      <button class="ghost" id="toStart" type="button">Zum Start</button>
+    </div>
+  </section>
 
-    <aside class="side">
-      <section class="panel" aria-labelledby="setH">
-        <h2 id="setH">Einstellungen <span class="zh">设置</span></h2>
-        <div class="field">
-          <span class="flabel">Region <span class="zh">地区说法</span></span>
-          <div class="seg" id="regionSeg">
-            <button type="button" data-v="DE">Deutschland</button>
-            <button type="button" data-v="AT">Österreich</button>
-            <button type="button" data-v="mix">Gemischt</button>
-          </div>
+  <!-- SETTINGS -->
+  <section class="screen" id="screenSettings" hidden>
+    <button class="back" id="back" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg> Zurück</button>
+    <div class="card">
+      <h2>Einstellungen <span class="zh">设置</span></h2>
+      <div class="field">
+        <span class="flabel">Region <span class="zh">地区说法</span></span>
+        <div class="seg" id="regionSeg">
+          <button type="button" data-v="DE">Deutschland</button>
+          <button type="button" data-v="AT">Österreich</button>
+          <button type="button" data-v="mix">Gemischt</button>
         </div>
-        <div class="field">
-          <label for="voice">Stimme <span class="zh">声音</span></label>
-          <select id="voice"></select>
-          <p class="note" id="voiceStatus">Stimmen werden geladen …</p>
-        </div>
-        <div class="field">
-          <label for="rate">Tempo <span class="zh">语速</span></label>
-          <input type="range" id="rate" min="0.7" max="1.3" step="0.05" value="1">
-          <div class="rate-row"><span>langsam</span><b id="rateVal">1.00×</b><span>schnell</span></div>
-        </div>
-        <div class="field">
-          <span class="flabel">Antworten <span class="zh">答题方式</span></span>
-          <div class="seg" id="answerSeg">
-            <button type="button" data-v="mc">Auswählen <span class="zh">选择</span></button>
-            <button type="button" data-v="text">Eintippen <span class="zh">输入</span></button>
-          </div>
-        </div>
-        <label class="check"><input type="checkbox" id="ctx"> <span>Ganze Sätze statt nur der Zahl <span class="zh">用完整句子</span></span></label>
-        <label class="check"><input type="checkbox" id="noise"> <span>Hintergrundrauschen wie am Bahnhof <span class="zh">背景噪音</span></span></label>
-        <label class="check"><input type="checkbox" id="zh"> <span>Chinesische Hinweise <span class="zh">中文提示</span></span></label>
-      </section>
-
-      <section class="panel" aria-labelledby="statH">
-        <h2 id="statH">Trefferquote <span class="zh">正确率</span></h2>
-        <ul class="stats" id="stats"></ul>
-      </section>
-
-      <section class="panel" aria-labelledby="histH">
-        <h2 id="histH">Verlauf <span class="zh">记录</span></h2>
-        <ol class="history" id="history"></ol>
-        <p class="empty" id="histEmpty">Hier erscheinen deine letzten Antworten. Mit dem Lautsprecher-Knopf hörst du sie noch einmal. <span class="zh">点喇叭可以重听。</span></p>
-      </section>
-    </aside>
-  </div>
+        <p class="note">Bestimmt die Formulierungen, z. B. „viertel acht", „Jänner" oder „zwo".</p>
+      </div>
+      <div class="field">
+        <label class="flabel" for="voice">Stimme <span class="zh">声音</span></label>
+        <select id="voice"></select>
+        <p class="note" id="voiceStatus">Stimmen werden geladen …</p>
+      </div>
+      <div class="field">
+        <label class="flabel" for="rate">Grundtempo <span class="zh">语速</span></label>
+        <input type="range" id="rate" min="0.7" max="1.3" step="0.05" value="1">
+        <div class="rate-row"><span>langsam</span><b id="rateVal">1.00×</b><span>schnell</span></div>
+      </div>
+      <label class="check"><input type="checkbox" id="ctx"> <span>Ganze Sätze statt nur der Zahl <span class="zh">用完整句子</span></span></label>
+      <label class="check"><input type="checkbox" id="noise"> <span>Hintergrundrauschen wie am Bahnhof <span class="zh">背景噪音</span></span></label>
+      <label class="check"><input type="checkbox" id="zh"> <span>Chinesische Hinweise <span class="zh">中文提示</span></span></label>
+    </div>
+    <div class="card">
+      <h2>Bestenliste <span class="zh">最高分</span></h2>
+      <p class="note">Die Bestenliste ist nur in diesem Browser gespeichert.</p>
+      <button class="danger" id="clearHs" type="button">Bestenliste löschen</button>
+    </div>
+  </section>
 </div>
 
 <script>
@@ -426,6 +492,7 @@ const pick = a => a[Math.floor(R() * a.length)];
 const chance = p => R() < p;
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(R() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const sec1 = s => s.toFixed(1).replace('.', ',');
 
 /* ---------- German number words ---------- */
 const ONES = ['null','eins','zwei','drei','vier','fünf','sechs','sieben','acht','neun','zehn','elf','zwölf','dreizehn','vierzehn','fünfzehn','sechzehn','siebzehn','achtzehn','neunzehn'];
@@ -917,6 +984,21 @@ const MODES = [
   ['mix', 'Mix', '混合', '-----']
 ];
 const MODE = Object.fromEntries(MODES.map(m => [m[0], { de: m[1], zh: m[2], blank: m[3] }]));
+const DIFF = {
+  easy:   { de: 'Leicht', zh: '简单', rate: .88, slow: true,  textShare: 0,  note: 'Vier Antworten zur Auswahl, etwas langsamer gesprochen.', noteZh: '四选一，语速稍慢。' },
+  medium: { de: 'Mittel', zh: '中等', rate: 1,   slow: true,  textShare: 0,  note: 'Vier Antworten zur Auswahl, normales Tempo.', noteZh: '四选一，正常语速。' },
+  hard:   { de: 'Schwer', zh: '困难', rate: 1.1, slow: false, textShare: .5, note: 'Schneller gesprochen, kein Langsam-Knopf, und etwa jede zweite Antwort musst du eintippen.', noteZh: '语速更快，没有慢速，大约一半的题要自己输入。' }
+};
+const ROUND_LEN = 10;
+
+/* ---------- scoring ---------- */
+// Full 100 points if answered within the grace time after the sentence ends, then down to 10 points.
+function pointsFor(sec, typed) {
+  const grace = typed ? 6 : 3, end = typed ? 30 : 20;
+  if (sec <= grace) return 100;
+  if (sec >= end) return 10;
+  return Math.round(100 - 90 * (sec - grace) / (end - grace));
+}
 
 /* ---------- voices ---------- */
 let VOICES = [];
@@ -978,49 +1060,79 @@ function startNoise() {
 }
 function stopNoise() { try { noiseSrc && noiseSrc.stop(); } catch (e) {} noiseSrc = null; }
 function setSpeaking(on) { $('#play').classList.toggle('speaking', on); }
-function speak(text, voiceURI, rate, pitch) {
-  if (!hasTTS) { showWarn('Dieser Browser kann keinen Text vorlesen. Bitte Microsoft Edge, Chrome oder Safari verwenden.'); return; }
+function speak(text, voiceURI, rate, pitch, onDone) {
+  if (!hasTTS) { showWarn('Dieser Browser kann keinen Text vorlesen. Bitte Microsoft Edge, Chrome oder Safari verwenden.'); onDone && onDone(); return; }
   const id = ++speakId;
-  speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
   const v = VOICES.find(x => x.voiceURI === voiceURI);
   if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'de-DE';
   u.rate = Math.max(.5, Math.min(1.6, rate));
   u.pitch = pitch || 1;
-  const done = () => { if (id !== speakId) return; stopNoise(); setSpeaking(false); };
+  let finished = false;
+  const done = () => { if (finished || id !== speakId) return; finished = true; clearTimeout(guardTimer); stopNoise(); setSpeaking(false); onDone && onDone(); };
   u.onend = done; u.onerror = done;
   startNoise(); setSpeaking(true);
-  clearTimeout(guardTimer); guardTimer = setTimeout(done, 25000);
-  setTimeout(() => { if (id !== speakId) return; try { speechSynthesis.resume(); } catch (e) {} speechSynthesis.speak(u); }, 80);
+  clearTimeout(guardTimer);
+  guardTimer = setTimeout(done, 2500 + text.length * 85 / u.rate);
+  const go = () => { if (id !== speakId) return; try { speechSynthesis.resume(); } catch (e) {} speechSynthesis.speak(u); };
+  // Speak inside the click handler when possible: iOS Safari only allows speech started directly by a tap.
+  if (speechSynthesis.speaking || speechSynthesis.pending) { speechSynthesis.cancel(); setTimeout(go, 80); }
+  else go();
 }
+function stopSpeech() { speakId++; clearTimeout(guardTimer); if (hasTTS) speechSynthesis.cancel(); stopNoise(); setSpeaking(false); }
 function showWarn(t) { const w = $('#ttsWarn'); w.textContent = t; w.hidden = false; }
 
-/* ---------- state ---------- */
-const DEFAULTS = { mode: 'time', region: 'mix', voice: 'auto', rate: 1, answer: 'mc', context: true, noise: false, zh: true };
+/* ---------- state & storage ---------- */
+const DEFAULTS = { mode: 'time', diff: 'medium', region: 'mix', voice: 'auto', rate: 1, context: true, noise: false, zh: true };
 let settings = { ...DEFAULTS };
-const state = { q: null, answered: false, played: false, t0: 0, score: 0, streak: 0, best: 0, stats: {}, history: [] };
-const STORE = 'zahlenohr.v1';
-function save() {
-  try { localStorage.setItem(STORE, JSON.stringify({ settings, best: state.best, stats: state.stats })); } catch (e) {}
-}
+let highscores = [];
+let round = null;
+let screen = 'Start', prevScreen = 'Start';
+let rafId = 0;
+const KEY_SET = 'zahlenohr.settings.v2', KEY_HS = 'zahlenohr.highscores.v1';
+function save() { try { localStorage.setItem(KEY_SET, JSON.stringify(settings)); } catch (e) {} }
+function saveHs() { try { localStorage.setItem(KEY_HS, JSON.stringify(highscores)); } catch (e) {} }
 function load() {
-  try { const d = JSON.parse(localStorage.getItem(STORE) || 'null'); if (d) { settings = { ...DEFAULTS, ...d.settings }; state.best = d.best || 0; state.stats = d.stats || {}; } } catch (e) {}
+  try { const s = JSON.parse(localStorage.getItem(KEY_SET) || 'null'); if (s) settings = { ...DEFAULTS, ...s }; } catch (e) {}
+  try { const h = JSON.parse(localStorage.getItem(KEY_HS) || '[]'); if (Array.isArray(h)) highscores = h; } catch (e) {}
+  if (!MODE[settings.mode]) settings.mode = 'time';
+  if (!DIFF[settings.diff]) settings.diff = 'medium';
 }
 
-/* ---------- rendering ---------- */
-function renderModes() {
-  $('#modes').innerHTML = MODES.map(m => `<button type="button" data-mode="${m[0]}" aria-pressed="${settings.mode === m[0]}">${m[1]} <span class="zh">${m[2]}</span></button>`).join('');
+/* ---------- screens ---------- */
+function show(name) {
+  if (name !== 'Settings') prevScreen = name;
+  screen = name;
+  for (const s of ['Start', 'Game', 'Result', 'Settings']) $('#screen' + s).hidden = s !== name;
+  $('#openSettings').hidden = name === 'Game' || name === 'Settings';
+  window.scrollTo(0, 0);
+}
+
+function renderStart() {
+  $('#modes').innerHTML = MODES.map(m => `<button type="button" class="chip" data-mode="${m[0]}" aria-pressed="${settings.mode === m[0]}">${m[1]} <span class="zh">${m[2]}</span></button>`).join('');
+  $('#diffSeg').innerHTML = Object.entries(DIFF).map(([k, d]) => `<button type="button" data-v="${k}" aria-pressed="${settings.diff === k}">${d.de} <span class="zh">${d.zh}</span></button>`).join('');
+  const d = DIFF[settings.diff];
+  $('#diffNote').innerHTML = `${esc(d.note)} <span class="zh">${esc(d.noteZh)}</span>`;
+  renderHs();
+}
+function renderHs(freshId) {
+  const list = highscores.filter(h => h.mode === settings.mode && h.diff === settings.diff).sort((a, b) => b.score - a.score).slice(0, 5);
+  $('#hsLabel').textContent = `${MODE[settings.mode].de} · ${DIFF[settings.diff].de}`;
+  $('#hsEmpty').hidden = list.length > 0;
+  $('#hsList').innerHTML = list.map(h => {
+    const dt = new Date(h.date);
+    const when = dt.toLocaleDateString('de-AT', { day: 'numeric', month: 'short' });
+    return `<li class="${h.id === freshId ? 'fresh' : ''}"><span class="pts">${h.score}</span> <span class="when">${h.correct}/10 richtig · ${esc(when)}</span></li>`;
+  }).join('');
 }
 function renderSettings() {
   document.querySelectorAll('#regionSeg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === settings.region));
-  document.querySelectorAll('#answerSeg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === settings.answer));
   $('#rate').value = settings.rate; $('#rateVal').textContent = (+settings.rate).toFixed(2) + '×';
   $('#ctx').checked = settings.context; $('#noise').checked = settings.noise; $('#zh').checked = settings.zh;
   document.body.classList.toggle('nozh', !settings.zh);
 }
-function renderScores() {
-  $('#score').textContent = state.score; $('#streak').textContent = state.streak; $('#best').textContent = state.best;
-}
+
+/* ---------- board ---------- */
 function renderBoard(str, reveal) {
   const el = $('#tiles');
   const chars = [...str];
@@ -1033,93 +1145,114 @@ function renderBoard(str, reveal) {
     return `<span class="${cls}" style="--i:${i++}">${esc(reveal || !isDigit ? (ch === '-' && !reveal ? '·' : ch) : '·')}</span>`;
   }).join('');
 }
-function renderStats() {
-  $('#stats').innerHTML = MODES.filter(m => m[0] !== 'mix').map(m => {
-    const s = state.stats[m[0]] || { r: 0, t: 0 };
-    const pc = s.t ? Math.round(s.r / s.t * 100) : 0;
-    return `<li><span>${m[1]} <span class="zh">${m[2]}</span></span><span class="bar"><i style="width:${pc}%"></i></span><span class="n">${s.r}/${s.t}</span></li>`;
-  }).join('');
-}
-const SPEAKER = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
-function renderHistory() {
-  const h = state.history;
-  $('#histEmpty').hidden = h.length > 0;
-  $('#history').innerHTML = h.map((e, i) => `<li>
-    <span class="s ${e.ok ? 'ok' : 'bad'}" aria-label="${e.ok ? 'richtig' : 'falsch'}">${e.ok ? '✓' : '✗'}</span>
-    <span><span class="a">${esc(e.answer)}</span>${e.ok ? '' : ` <span class="zh">你选了 ${esc(e.user || '–')}</span>`}<span class="t">${esc(e.text)}</span></span>
-    <button type="button" data-h="${i}" aria-label="Noch einmal anhören">${SPEAKER}</button>
-  </li>`).join('');
+
+/* ---------- game ---------- */
+function startRound() {
+  round = { mode: settings.mode, diff: settings.diff, items: [], i: -1, score: 0 };
+  $('#progress').innerHTML = '<i></i>'.repeat(ROUND_LEN);
+  $('#runScore').textContent = '0';
+  disarmQuit();
+  show('Game');
+  nextQuestion();
 }
 
-function newQuestion(auto) {
-  const mode = settings.mode === 'mix' ? pick(['time', 'phone', 'number', 'price', 'date']) : settings.mode;
+function nextQuestion() {
+  if (!round) return;
+  round.i++;
+  if (round.i >= ROUND_LEN) { finishRound(); return; }
+  const diff = DIFF[round.diff];
+  const mode = round.mode === 'mix' ? pick(['time', 'phone', 'number', 'price', 'date']) : round.mode;
   const region = settings.region === 'mix' ? (chance(.5) ? 'AT' : 'DE') : settings.region;
   const q = GEN[mode](region);
   q.mode = mode; q.region = region;
   q.text = settings.context ? pick(q.tpl).replace('{x}', q.core) : (q.coreAlone || q.core);
   const v = chooseVoice(region);
   q.voiceURI = v ? v.voiceURI : null;
-  q.rateJ = 1 + (R() - .5) * .08;
+  q.rate = settings.rate * diff.rate * (1 + (R() - .5) * .08);
   q.pitch = .94 + R() * .12;
-  state.q = q; state.answered = false; state.played = false; state.t0 = 0;
+  const item = { q, input: chance(diff.textShare) ? 'text' : 'mc', tStart: 0, answered: false, user: '', ok: false, sec: 0, pts: 0 };
+  round.items.push(item);
 
+  $('#qNum').textContent = round.i + 1;
+  [...$('#progress').children].forEach((el, i) => { el.className = i < round.i ? (round.items[i].ok ? 'ok' : 'bad') : (i === round.i ? 'cur' : ''); });
   $('#boardMode').innerHTML = `${MODE[mode].de} <span class="zh">${MODE[mode].zh}</span>`;
   $('#boardRegion').textContent = region === 'AT' ? 'Österreich' : 'Deutschland';
   renderBoard(MODE[mode].blank, false);
   $('#feedback').hidden = true;
-  $('#replay').disabled = true; $('#slow').disabled = true;
-  $('#promptNote').hidden = false;
+  $('#slow').hidden = !diff.slow;
+  $('#playLabel').innerHTML = 'Anhören <span class="zh">听</span>';
+  resetTimer();
 
   const opts = $('#options');
-  const isMC = settings.answer === 'mc';
-  opts.hidden = !isMC; $('#textForm').hidden = isMC;
+  const isMC = item.input === 'mc';
+  opts.hidden = !isMC; $('#textForm').hidden = isMC; $('#inputTag').hidden = isMC;
   if (isMC) {
-    opts.className = 'options locked' + (q.answer.length > 11 ? ' long' : '');
-    opts.innerHTML = q.options.map((o, i) => `<button type="button" class="opt" data-v="${esc(o)}" disabled><span class="k">${i + 1}</span><span>${esc(o)}</span></button>`).join('');
+    opts.className = 'options' + (q.answer.length > 11 ? ' long' : '');
+    opts.innerHTML = q.options.map((o, i) => `<button type="button" class="opt" data-v="${esc(o)}"><span class="k">${i + 1}</span><span>${esc(o)}</span></button>`).join('');
   } else {
     const inp = $('#txt');
-    inp.value = ''; inp.className = ''; inp.placeholder = q.ph; inp.setAttribute('inputmode', q.im); inp.disabled = true;
-    $('#txtBtn').disabled = true;
+    inp.value = ''; inp.className = ''; inp.placeholder = q.ph; inp.setAttribute('inputmode', q.im); inp.disabled = false;
+    $('#txtBtn').disabled = false;
   }
-  if (auto) play(false);
+  play(false);
+  if (!isMC) setTimeout(() => $('#txt').focus({ preventScroll: true }), 60);
 }
 
-function unlock() {
-  if (state.played) return;
-  state.played = true; state.t0 = performance.now();
-  $('#replay').disabled = false; $('#slow').disabled = false;
-  $('#promptNote').hidden = true;
-  if (settings.answer === 'mc') {
-    $('#options').classList.remove('locked');
-    document.querySelectorAll('#options .opt').forEach(b => b.disabled = false);
-  } else {
-    $('#txt').disabled = false; $('#txtBtn').disabled = false;
-    setTimeout(() => $('#txt').focus(), 50);
-  }
-}
+function cur() { return round && round.items[round.i]; }
+
 function play(slow) {
-  const q = state.q; if (!q) return;
-  if (!state.answered) unlock();
-  speak(q.text, q.voiceURI, settings.rate * q.rateJ * (slow ? .7 : 1), q.pitch);
+  const it = cur(); if (!it) return;
+  const q = it.q;
+  $('#playLabel').innerHTML = 'Nochmal <span class="zh">再听</span>';
+  speak(q.text, q.voiceURI, q.rate * (slow ? .7 : 1), q.pitch, () => {
+    // The timer starts when the sentence has been read out the first time.
+    if (!it.tStart && !it.answered && it === cur()) { it.tStart = performance.now(); startTimer(); }
+  });
+}
+
+function resetTimer() {
+  cancelAnimationFrame(rafId);
+  $('#timer').classList.add('waiting');
+  $('#timerTxt').textContent = 'hör zu';
+  $('#timerBar').style.width = '100%';
+  $('#potTxt').textContent = '100';
+  $('#potLbl').textContent = 'Pkt. möglich';
+}
+function startTimer() {
+  $('#timer').classList.remove('waiting');
+  const it = cur();
+  const tick = () => {
+    if (!it || it.answered || it !== cur()) return;
+    const s = (performance.now() - it.tStart) / 1000;
+    const p = pointsFor(s, it.input === 'text');
+    $('#timerTxt').textContent = sec1(s) + ' s';
+    $('#potTxt').textContent = p;
+    $('#timerBar').style.width = ((p - 10) / 90 * 100) + '%';
+    rafId = requestAnimationFrame(tick);
+  };
+  tick();
 }
 
 function submit(val) {
-  const q = state.q;
-  if (!q || state.answered || !state.played) return;
-  if (settings.answer === 'text' && !String(val).trim()) return;
-  const ok = settings.answer === 'mc' ? val === q.answer : q.check(val);
-  state.answered = true;
-  const secs = (performance.now() - state.t0) / 1000;
-  let gained = 0;
-  if (ok) { gained = 10 + Math.max(0, Math.min(10, Math.round(14 - secs))); state.score += gained; state.streak++; state.best = Math.max(state.best, state.streak); }
-  else state.streak = 0;
-  const s = state.stats[q.mode] || (state.stats[q.mode] = { r: 0, t: 0 });
-  s.t++; if (ok) s.r++;
-  state.history.unshift({ ok, answer: q.answer, user: String(val), text: q.text, voiceURI: q.voiceURI, rate: q.rateJ, pitch: q.pitch });
-  state.history = state.history.slice(0, 12);
-  save();
+  const it = cur();
+  if (!it || it.answered) return;
+  if (it.input === 'text' && !String(val).trim()) return;
+  const q = it.q;
+  it.answered = true;
+  cancelAnimationFrame(rafId);
+  it.sec = it.tStart ? (performance.now() - it.tStart) / 1000 : 0;
+  it.user = String(val).trim();
+  it.ok = it.input === 'mc' ? val === q.answer : q.check(val);
+  it.pts = it.ok ? pointsFor(it.sec, it.input === 'text') : 0;
+  round.score += it.pts;
+  $('#runScore').textContent = round.score;
+  $('#timerTxt').textContent = sec1(it.sec) + ' s';
+  $('#potTxt').textContent = it.pts;
+  $('#potLbl').textContent = 'Pkt.';
+  $('#timer').classList.remove('waiting');
+  $('#progress').children[round.i].className = it.ok ? 'ok' : 'bad';
 
-  if (settings.answer === 'mc') {
+  if (it.input === 'mc') {
     const opts = $('#options'); opts.classList.add('done');
     opts.querySelectorAll('.opt').forEach(b => {
       b.disabled = true;
@@ -1127,88 +1260,156 @@ function submit(val) {
       else if (b.dataset.v === val) b.classList.add('wrong');
     });
   } else {
-    $('#txt').disabled = true; $('#txtBtn').disabled = true; $('#txt').classList.add(ok ? 'ok' : 'bad');
+    $('#txt').disabled = true; $('#txtBtn').disabled = true; $('#txt').classList.add(it.ok ? 'ok' : 'bad');
   }
   renderBoard(q.answer, true);
 
   const vd = $('#verdict');
-  vd.className = 'verdict ' + (ok ? 'ok' : 'bad');
-  vd.innerHTML = ok
-    ? `Richtig! +${gained} <span class="zh">答对了</span>`
-    : `Leider nicht. Richtig ist ${esc(q.answer)}.<span class="zh">答错了</span>`;
-  const i = q.text.indexOf(q.core);
-  $('#transcript').innerHTML = '„' + (i >= 0 ? esc(q.text.slice(0, i)) + '<mark>' + esc(q.core) + '</mark>' + esc(q.text.slice(i + q.core.length)) : esc(q.text)) + '"';
-  $('#parts').innerHTML = q.parts.map(p => `<span class="part"><span class="w">${esc(p.w)}</span><span class="d">${esc(p.d)}</span></span>`).join('');
-  $('#parts').hidden = !q.parts.length;
-  $('#hints').innerHTML = q.hints.map(h => `<li><span>${esc(h.de)}</span><span class="zh">${esc(h.zh)}</span></li>`).join('');
-  const v = VOICES.find(x => x.voiceURI === q.voiceURI);
-  const regTxt = q.region === 'AT' ? 'österreichische Formulierung' : 'deutsche Formulierung';
-  $('#voiceinfo').textContent = `${MODE[q.mode].de}, ${q.kind} · ${regTxt} · Stimme: ${v ? v.name + ' (' + v.lang + ')' : 'Standardstimme des Browsers'}`;
+  vd.className = 'verdict ' + (it.ok ? 'ok' : 'bad');
+  vd.innerHTML = it.ok
+    ? `Richtig! +${it.pts} <span class="zh">答对了</span>`
+    : `Falsch. Richtig ist ${esc(q.answer)}.<span class="zh">答错了</span>`;
+  $('#transcript').innerHTML = transcriptHtml(q);
+  // Explanations only after a mistake, to keep the round quick.
+  $('#parts').innerHTML = it.ok ? '' : partsHtml(q);
+  $('#parts').hidden = it.ok || !q.parts.length;
+  $('#hints').innerHTML = it.ok ? '' : hintsHtml(q);
+  $('#hints').hidden = it.ok;
+  $('#next').innerHTML = round.i === ROUND_LEN - 1 ? 'Ergebnis ansehen <span class="zh">看成绩</span> →' : 'Weiter <span class="zh">下一题</span> →';
   $('#feedback').hidden = false;
-  renderScores(); renderStats(); renderHistory();
   setTimeout(() => $('#next').focus({ preventScroll: true }), 30);
 }
 
+function transcriptHtml(q) {
+  const i = q.text.indexOf(q.core);
+  return '„' + (i >= 0 ? esc(q.text.slice(0, i)) + '<mark>' + esc(q.core) + '</mark>' + esc(q.text.slice(i + q.core.length)) : esc(q.text)) + '"';
+}
+const partsHtml = q => q.parts.map(p => `<span class="part"><span class="w">${esc(p.w)}</span><span class="d">${esc(p.d)}</span></span>`).join('');
+const hintsHtml = q => q.hints.map(h => `<li><span>${esc(h.de)}</span><span class="zh">${esc(h.zh)}</span></li>`).join('');
+
+const SPEAKER = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
+
+function finishRound() {
+  stopSpeech();
+  const items = round.items;
+  const correct = items.filter(i => i.ok).length;
+  const okTimes = items.filter(i => i.ok).map(i => i.sec);
+  const avg = okTimes.length ? okTimes.reduce((a, b) => a + b, 0) / okTimes.length : 0;
+  const entry = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), score: round.score, correct, mode: round.mode, diff: round.diff, date: Date.now() };
+  const same = highscores.filter(h => h.mode === round.mode && h.diff === round.diff);
+  const prevBest = same.length ? Math.max(...same.map(h => h.score)) : -1;
+  const rank = same.filter(h => h.score > entry.score).length + 1;
+  highscores.push(entry);
+  // keep the best 10 per mode/difficulty
+  const keep = [];
+  for (const m of Object.keys(MODE)) for (const d of Object.keys(DIFF)) {
+    keep.push(...highscores.filter(h => h.mode === m && h.diff === d).sort((a, b) => b.score - a.score).slice(0, 10));
+  }
+  highscores = keep;
+  saveHs();
+  round.entryId = entry.id;
+
+  $('#resLabel').textContent = `Ergebnis · ${MODE[round.mode].de} · ${DIFF[round.diff].de}`;
+  $('#resTotal').textContent = round.score;
+  const rec = $('#resRecord');
+  if (round.score > prevBest && round.score > 0) { rec.innerHTML = 'Neuer Rekord! <span class="zh">新纪录！</span>'; rec.hidden = false; }
+  else if (rank <= 5 && round.score > 0) { rec.innerHTML = `Platz ${rank} in der Bestenliste <span class="zh">第 ${rank} 名</span>`; rec.hidden = false; }
+  else rec.hidden = true;
+  $('#resSummary').innerHTML = `${correct} von 10 richtig` + (okTimes.length ? ` · im Schnitt ${sec1(avg)} s pro richtiger Antwort` : '') + ` <span class="zh">答对 ${correct} 题</span>`;
+
+  $('#resList').innerHTML = items.map((it, i) => {
+    const q = it.q;
+    return `<li class="${it.ok ? 'ok' : 'bad'}">
+      <div class="row">
+        <span class="n">${i + 1}</span>
+        <span class="a">${esc(q.answer)}<span class="m">${MODE[q.mode].de} · ${it.input === 'text' ? 'eingetippt · ' : ''}${it.ok ? sec1(it.sec) + ' s' : 'falsch'}</span></span>
+        <button type="button" class="say" data-i="${i}" aria-label="Noch einmal anhören">${SPEAKER}</button>
+        <span class="p">${it.pts}</span>
+      </div>
+      ${it.ok ? '' : `<p class="you">Deine Antwort: <span>${esc(it.user || '–')}</span></p>`}
+      <details><summary>Satz und Erklärung <span class="zh">原句和解释</span></summary>
+        <div><p class="transcript">${transcriptHtml(q)}</p>${q.parts.length ? `<div class="parts">${partsHtml(q)}</div>` : ''}<ul class="hints">${hintsHtml(q)}</ul></div>
+      </details>
+    </li>`;
+  }).join('');
+  show('Result');
+}
+
+function disarmQuit() { const b = $('#quit'); b.classList.remove('armed'); b.textContent = 'Runde abbrechen'; clearTimeout(b._t); }
+
 /* ---------- events ---------- */
 function bind() {
-  $('#modes').addEventListener('click', e => {
-    const b = e.target.closest('button[data-mode]'); if (!b) return;
-    settings.mode = b.dataset.mode; save(); renderModes(); newQuestion(false);
-  });
+  $('#home').addEventListener('click', () => { if (screen === 'Game') return; stopSpeech(); renderStart(); show('Start'); });
+  $('#openSettings').addEventListener('click', () => { renderSettings(); show('Settings'); });
+  $('#back').addEventListener('click', () => { if (prevScreen === 'Start') renderStart(); show(prevScreen); });
+  $('#modes').addEventListener('click', e => { const b = e.target.closest('button[data-mode]'); if (!b) return; settings.mode = b.dataset.mode; save(); renderStart(); });
+  $('#diffSeg').addEventListener('click', e => { const b = e.target.closest('button[data-v]'); if (!b) return; settings.diff = b.dataset.v; save(); renderStart(); });
+  $('#startBtn').addEventListener('click', startRound);
+  $('#again').addEventListener('click', startRound);
+  $('#toStart').addEventListener('click', () => { stopSpeech(); renderStart(); renderHs(round && round.entryId); show('Start'); });
+
   $('#play').addEventListener('click', () => play(false));
-  $('#replay').addEventListener('click', () => play(false));
-  $('#replay2').addEventListener('click', () => play(false));
   $('#slow').addEventListener('click', () => play(true));
-  $('#next').addEventListener('click', () => newQuestion(true));
+  $('#next').addEventListener('click', nextQuestion);
   $('#options').addEventListener('click', e => { const b = e.target.closest('.opt'); if (b && !b.disabled) submit(b.dataset.v); });
   $('#textForm').addEventListener('submit', e => { e.preventDefault(); submit($('#txt').value); });
-  $('#regionSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; settings.region = b.dataset.v; save(); renderSettings(); newQuestion(false); });
-  $('#answerSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; settings.answer = b.dataset.v; save(); renderSettings(); newQuestion(false); });
-  $('#voice').addEventListener('change', e => { settings.voice = e.target.value; save(); if (state.q && !state.answered) { const v = chooseVoice(state.q.region); state.q.voiceURI = v ? v.voiceURI : null; } });
+  $('#quit').addEventListener('click', () => {
+    const b = $('#quit');
+    if (!b.classList.contains('armed')) {
+      b.classList.add('armed'); b.textContent = 'Wirklich abbrechen? Nochmal tippen.';
+      b._t = setTimeout(disarmQuit, 3500); return;
+    }
+    disarmQuit(); stopSpeech(); cancelAnimationFrame(rafId); round = null; renderStart(); show('Start');
+  });
+  $('#resList').addEventListener('click', e => {
+    const b = e.target.closest('button.say'); if (!b || !round) return;
+    const q = round.items[+b.dataset.i].q; speak(q.text, q.voiceURI, q.rate, q.pitch);
+  });
+
+  $('#regionSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; settings.region = b.dataset.v; save(); renderSettings(); });
+  $('#voice').addEventListener('change', e => { settings.voice = e.target.value; save(); });
   $('#rate').addEventListener('input', e => { settings.rate = +e.target.value; $('#rateVal').textContent = settings.rate.toFixed(2) + '×'; save(); });
-  $('#ctx').addEventListener('change', e => { settings.context = e.target.checked; save(); newQuestion(false); });
+  $('#ctx').addEventListener('change', e => { settings.context = e.target.checked; save(); });
   $('#noise').addEventListener('change', e => { settings.noise = e.target.checked; save(); if (!settings.noise) stopNoise(); });
   $('#zh').addEventListener('change', e => { settings.zh = e.target.checked; save(); renderSettings(); });
-  $('#history').addEventListener('click', e => {
-    const b = e.target.closest('button[data-h]'); if (!b) return;
-    const h = state.history[+b.dataset.h]; if (h) speak(h.text, h.voiceURI, settings.rate * h.rate, h.pitch);
+  $('#clearHs').addEventListener('click', () => {
+    const b = $('#clearHs');
+    if (!b.classList.contains('armed')) {
+      b.classList.add('armed'); b.textContent = 'Wirklich löschen? Nochmal tippen.';
+      setTimeout(() => { b.classList.remove('armed'); b.textContent = 'Bestenliste löschen'; }, 3500); return;
+    }
+    highscores = []; saveHs(); b.classList.remove('armed'); b.textContent = 'Gelöscht';
   });
+
   document.addEventListener('keydown', e => {
+    if (screen !== 'Game') return;
     const tag = (e.target.tagName || '').toLowerCase();
     if (tag === 'input' || tag === 'select' || tag === 'textarea') return;
     if (e.metaKey || e.ctrlKey || e.altKey) return;
+    const it = cur(); if (!it) return;
     if (e.key === ' ') { e.preventDefault(); play(false); }
-    else if (e.key === 'l' || e.key === 'L') play(true);
-    else if (e.key === 'Enter' && state.answered && tag !== 'button') { e.preventDefault(); newQuestion(true); }
-    else if (/^[1-4]$/.test(e.key) && settings.answer === 'mc' && !state.answered && state.played) {
+    else if ((e.key === 'l' || e.key === 'L') && DIFF[round.diff].slow) play(true);
+    else if (e.key === 'Enter' && it.answered && tag !== 'button') { e.preventDefault(); nextQuestion(); }
+    else if (/^[1-4]$/.test(e.key) && it.input === 'mc' && !it.answered) {
       const b = document.querySelectorAll('#options .opt')[+e.key - 1]; if (b) submit(b.dataset.v);
     }
   });
+
   if (hasTTS) {
     loadVoices();
-    speechSynthesis.addEventListener ? speechSynthesis.addEventListener('voiceschanged', loadVoices) : (speechSynthesis.onvoiceschanged = loadVoices);
+    if (speechSynthesis.addEventListener) speechSynthesis.addEventListener('voiceschanged', loadVoices);
+    else speechSynthesis.onvoiceschanged = loadVoices;
     setTimeout(loadVoices, 600); setTimeout(loadVoices, 2000);
-  } else {
-    renderVoiceSelect();
-    showWarn('Dieser Browser kann keinen Text vorlesen. Bitte Microsoft Edge, Chrome oder Safari verwenden.');
-  }
+  } else renderVoiceSelect();
 }
 
-function start(data) {
-  load();
-  if (data && data.settings) {
-    settings = { ...DEFAULTS, ...data.settings };
-    state.score = data.score || 0; state.streak = data.streak || 0;
-    state.best = Math.max(state.best, data.best || 0);
-    state.stats = data.stats || state.stats; state.history = data.history || [];
-  }
-  renderModes(); renderSettings(); renderScores(); renderStats(); renderHistory(); renderVoiceSelect();
-  bind();
-  newQuestion(false);
-}
-window.__zahlenohr = { GEN };
-try { window.claude?.hot?.snapshot?.(() => ({ settings, score: state.score, streak: state.streak, best: state.best, stats: state.stats, history: state.history })); } catch (e) {}
-window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
+window.__zahlenohr = { GEN, pointsFor };
+load();
+renderSettings();
+renderStart();
+renderVoiceSelect();
+bind();
+show('Start');
 })();
 </script>
 </body>
