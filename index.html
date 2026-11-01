@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
 <style>
-/* Layout: one narrow column, four screens (start, game, result, settings). The departure-board readout is the centrepiece of the game screen. */
+/* Layout: four screens. Phones stack everything in one column; from 900px every screen is a two-column spread sized to fit a 13" laptop screen without scrolling. */
 :root {
   --paper: #ECEFF3;
   --surface: #FFFFFF;
@@ -28,6 +28,14 @@
   --tile-dim: #3A4A6B;
   --tile-line: #0A101C;
   --board-label: #8D9BB9;
+  /* one hue per exercise, used on the mode cards */
+  --m-time: #2F5BD3;
+  --m-phone: #0E8A7A;
+  --m-number: #8A4FD0;
+  --m-price: #C8641B;
+  --m-date: #C23A63;
+  --m-mix: #152036;
+  --card-fg: #FFFFFF;
 
   --f-display: "Barlow Condensed", "Arial Narrow", "PingFang SC", "Noto Sans SC", sans-serif;
   --f-body: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
@@ -40,6 +48,7 @@
     --signal: #F5C02E; --signal-ink: #1E1600; --mark: #4A3D10;
     --ok: #46C784; --ok-soft: #16342A; --bad: #FF7468; --bad-soft: #3B1D1B;
     --board: #070B13; --tile: #131C2E; --tile-fg: #FFD866; --tile-dim: #2A3754; --tile-line: #03060B; --board-label: #7887A6;
+    --m-time: #3A63D6; --m-phone: #12806F; --m-number: #7B48BD; --m-price: #B35A1A; --m-date: #B03559; --m-mix: #2A3550; --card-fg: #FFFFFF;
     color-scheme: dark;
   }
 }
@@ -48,147 +57,115 @@
   --signal: #F5C02E; --signal-ink: #1E1600; --mark: #4A3D10;
   --ok: #46C784; --ok-soft: #16342A; --bad: #FF7468; --bad-soft: #3B1D1B;
   --board: #070B13; --tile: #131C2E; --tile-fg: #FFD866; --tile-dim: #2A3754; --tile-line: #03060B; --board-label: #7887A6;
+  --m-time: #3A63D6; --m-phone: #12806F; --m-number: #7B48BD; --m-price: #B35A1A; --m-date: #B03559; --m-mix: #2A3550; --card-fg: #FFFFFF;
   color-scheme: dark;
 }
 
 body { margin: 0; }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
-body {
-  background: var(--paper);
-  color: var(--ink);
-  font-family: var(--f-body);
-  font-size: 16px;
-  line-height: 1.5;
-}
+body { background: var(--paper); color: var(--ink); font-family: var(--f-body); font-size: 16px; line-height: 1.45; }
 button, input, select { font: inherit; color: inherit; }
 button { cursor: pointer; }
 :focus-visible { outline: 3px solid var(--signal); outline-offset: 2px; }
+svg.i { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
 
 .app {
-  max-width: 660px;
+  max-width: 1120px;
   margin: 0 auto;
-  padding-block: 16px 48px;
+  padding-block: 12px 32px;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 16px;
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px;
 }
-.screen { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+.screen { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-items: start; }
+.col { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; min-width: 0; align-content: start; }
 
 .zh { font-family: var(--f-zh); font-size: .82em; color: var(--muted); font-weight: 400; }
 body.nozh .zh { display: none !important; }
 
 /* header */
-.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.brand {
-  border: 0; background: none; padding: 0;
-  font-family: var(--f-display); font-weight: 700; font-size: 30px; line-height: 1; letter-spacing: -.01em;
-  display: flex; align-items: baseline; gap: 8px;
-}
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 40px; }
+.brand { border: 0; background: none; padding: 0; font-family: var(--f-display); font-weight: 700; font-size: 28px; line-height: 1; display: flex; align-items: baseline; gap: 8px; }
 .brand .zh { font-size: 15px; letter-spacing: .04em; white-space: nowrap; }
-@media (max-width: 420px) { .brand .zh { display: none; } }
-.icon-btn {
-  display: flex; align-items: center; gap: 8px;
-  padding: 8px 14px; border-radius: 999px;
-  border: 1px solid var(--line); background: var(--surface);
-  font-size: 15px;
-}
-.icon-btn svg, .ghost svg, .back svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
-.icon-btn:hover, .ghost:hover, .chip:hover, .seg button:hover { border-color: var(--ink); }
+.icon-btn { display: flex; align-items: center; gap: 8px; padding: 7px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 15px; }
+.icon-btn:hover, .ghost:hover, .seg button:hover { border-color: var(--ink); }
 
-.card {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  padding: clamp(16px, 3.5vw, 26px);
-  display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px;
-  min-width: 0;
-}
-.card h2 { margin: 0; font-family: var(--f-display); font-weight: 700; font-size: 20px; text-transform: uppercase; letter-spacing: .06em; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; min-width: 0; align-content: start; }
+.card h2 { margin: 0; font-family: var(--f-display); font-weight: 700; font-size: 19px; text-transform: uppercase; letter-spacing: .06em; display: flex; flex-wrap: wrap; gap: 2px 10px; align-items: baseline; }
 .card h2 .zh { text-transform: none; letter-spacing: 0; font-size: 14px; }
 .card h2 .sub { font-family: var(--f-body); text-transform: none; letter-spacing: 0; font-weight: 400; font-size: 14px; color: var(--muted); }
 
-.intro h1 { margin: 0; font-family: var(--f-display); font-weight: 700; font-size: clamp(30px, 7vw, 40px); line-height: 1.05; text-wrap: balance; }
-.intro p { margin: 6px 0 0; color: var(--muted); max-width: 60ch; }
-
-.field { display: grid; gap: 8px; }
+.intro h1 { margin: 0; font-family: var(--f-display); font-weight: 700; font-size: clamp(28px, 4vw, 34px); line-height: 1.05; text-wrap: balance; }
+.intro p { margin: 4px 0 0; color: var(--muted); font-size: 15px; }
+.field { display: grid; gap: 7px; }
 .flabel { font-weight: 700; font-size: 15px; display: flex; gap: 6px; align-items: baseline; }
 .note { margin: 0; font-size: 14px; color: var(--muted); }
 
-.chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip {
-  display: flex; align-items: baseline; gap: 6px;
-  padding: 9px 16px; border-radius: 999px;
-  border: 1px solid var(--line); background: var(--paper);
-  font-family: var(--f-display); font-weight: 600; font-size: 18px; letter-spacing: .02em;
+/* mode cards */
+.modes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.mcard {
+  --c: var(--m-time);
+  position: relative; overflow: hidden; isolation: isolate;
+  display: grid; align-content: end; gap: 0;
+  min-height: 84px; padding: 10px 12px;
+  border: 0; border-radius: 12px;
+  background: var(--c); color: var(--card-fg);
+  text-align: left;
+  opacity: .7; transition: opacity .15s, transform .15s;
 }
-.chip[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
-.chip[aria-pressed="true"] .zh { color: inherit; opacity: .75; }
+.mcard:hover { opacity: .85; }
+.mcard[aria-pressed="true"] { opacity: 1; box-shadow: 0 0 0 3px var(--surface), 0 0 0 5px var(--c); }
+.mcard .t { font-family: var(--f-display); font-weight: 700; font-size: 21px; line-height: 1.05; position: relative; z-index: 2; }
+.mcard .t .zh { color: inherit; opacity: .8; font-size: 13px; display: block; }
+.mcard .art { position: absolute; right: -10px; top: -10px; width: 74px; height: 74px; opacity: .28; stroke-width: 1.6; z-index: 1; }
+.mcard .photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
+.mcard .photo + .shade { position: absolute; inset: 0; z-index: 1; background: linear-gradient(to top, var(--c) 10%, transparent 90%); }
+.mcard[data-mode="time"] { --c: var(--m-time); }
+.mcard[data-mode="phone"] { --c: var(--m-phone); }
+.mcard[data-mode="number"] { --c: var(--m-number); }
+.mcard[data-mode="price"] { --c: var(--m-price); }
+.mcard[data-mode="date"] { --c: var(--m-date); }
+.mcard[data-mode="mix"] { --c: var(--m-mix); }
+@media (max-width: 420px) { .modes { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
 .seg { display: flex; border: 1px solid var(--line); border-radius: 999px; padding: 3px; gap: 2px; background: var(--paper); }
-.seg button { flex: 1; border: 1px solid transparent; background: transparent; border-radius: 999px; padding: 8px 8px; color: var(--muted); font-size: 15px; white-space: nowrap; }
+.seg button { flex: 1; border: 1px solid transparent; background: transparent; border-radius: 999px; padding: 7px 8px; color: var(--muted); font-size: 15px; white-space: nowrap; }
 .seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
 .seg button[aria-pressed="true"] .zh { color: inherit; opacity: .75; }
-.seg.big button { font-family: var(--f-display); font-weight: 600; font-size: 19px; padding: 10px 8px; }
+.seg.big button { font-family: var(--f-display); font-weight: 600; font-size: 19px; padding: 8px; }
 
-.start {
-  display: flex; align-items: center; justify-content: center; gap: 12px;
-  padding: 14px 24px; border: 0; border-radius: 999px;
-  background: var(--signal); color: var(--signal-ink);
-  font-family: var(--f-display); font-weight: 700; font-size: 26px; letter-spacing: .02em;
-}
+.start { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 12px 24px; border: 0; border-radius: 999px; background: var(--signal); color: var(--signal-ink); font-family: var(--f-display); font-weight: 700; font-size: 25px; letter-spacing: .02em; }
 .start .zh { color: var(--signal-ink); opacity: .7; }
-.start svg { width: 20px; height: 20px; fill: currentColor; }
+.start svg { width: 18px; height: 18px; fill: currentColor; }
 
-.hs { margin: 0; padding: 0; list-style: none; display: grid; gap: 0; counter-reset: hs; }
-.hs li { counter-increment: hs; display: grid; grid-template-columns: 28px 1fr auto; gap: 10px; align-items: baseline; padding: 8px 0; border-top: 1px solid var(--line); }
+/* high scores */
+.hs { margin: 0; padding: 0; list-style: none; display: grid; counter-reset: hs; }
+.hs li { counter-increment: hs; display: grid; grid-template-columns: 26px auto 1fr; gap: 10px; align-items: baseline; padding: 6px 0; border-top: 1px solid var(--line); }
 .hs li:first-child { border-top: 0; }
-.hs li::before { content: counter(hs) "."; font-family: var(--f-mono); color: var(--muted); font-size: 14px; }
-.hs .pts { font-family: var(--f-mono); font-weight: 700; font-size: 18px; font-variant-numeric: tabular-nums; }
-.hs .when { color: var(--muted); font-size: 14px; }
+.hs li::before { content: counter(hs) "."; font-family: var(--f-mono); color: var(--muted); font-size: 13px; }
+.hs .pts { font-family: var(--f-mono); font-weight: 700; font-size: 17px; font-variant-numeric: tabular-nums; }
+.hs .when { color: var(--muted); font-size: 13px; text-align: right; }
 .hs li.fresh { background: var(--mark); border-radius: 8px; padding-inline: 8px; margin-inline: -8px; }
 .empty { margin: 0; color: var(--muted); font-size: 14px; }
+.rules { margin: 0; padding: 12px 14px; border-radius: 12px; background: var(--paper); font-size: 14px; display: grid; gap: 4px; }
+.rules b { font-family: var(--f-mono); }
 
 /* game */
 .gamebar { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px; }
-.gamebar .qc { font-family: var(--f-display); font-weight: 600; font-size: 18px; white-space: nowrap; }
-.gamebar .qc b, .gamebar .sc b { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
-.gamebar .sc { font-family: var(--f-display); font-weight: 600; font-size: 18px; white-space: nowrap; text-align: right; }
+.gamebar .qc, .gamebar .sc { font-family: var(--f-display); font-weight: 600; font-size: 18px; white-space: nowrap; }
+.gamebar b { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
 .progress { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; }
 .progress i { height: 8px; border-radius: 4px; background: var(--line); }
 .progress i.cur { background: var(--ink); }
 .progress i.ok { background: var(--ok); }
 .progress i.bad { background: var(--bad); }
 
-.board {
-  background: var(--board);
-  border-radius: 12px;
-  padding: 12px 14px 16px;
-  container-type: inline-size;
-  display: grid; gap: 12px;
-}
-.board-head {
-  display: flex; justify-content: space-between; gap: 10px;
-  font-family: var(--f-display); text-transform: uppercase; letter-spacing: .14em; font-size: 13px;
-  color: var(--board-label);
-}
+.board { background: var(--board); border-radius: 12px; padding: 10px 14px 14px; container-type: inline-size; display: grid; gap: 10px; }
+.board-head { display: flex; justify-content: space-between; gap: 10px; font-family: var(--f-display); text-transform: uppercase; letter-spacing: .14em; font-size: 13px; color: var(--board-label); }
 .board-head .zh { color: var(--board-label); letter-spacing: .05em; text-transform: none; }
-.tiles {
-  --fs: min(48px, calc((100cqw - var(--n) * 5px) / (var(--n) * .8)));
-  display: flex; justify-content: center; gap: 4px; min-height: calc(var(--fs) * 1.3);
-  perspective: 400px;
-}
-.tile {
-  position: relative;
-  width: calc(var(--fs) * .76);
-  height: calc(var(--fs) * 1.28);
-  display: grid; place-items: center;
-  background: var(--tile); color: var(--tile-fg);
-  font-family: var(--f-mono); font-weight: 700; font-size: var(--fs);
-  border-radius: 4px;
-}
+.tiles { --fs: min(44px, calc((100cqw - var(--n) * 5px) / (var(--n) * .8))); display: flex; justify-content: center; gap: 4px; min-height: calc(var(--fs) * 1.3); perspective: 400px; }
+.tile { position: relative; width: calc(var(--fs) * .76); height: calc(var(--fs) * 1.28); display: grid; place-items: center; background: var(--tile); color: var(--tile-fg); font-family: var(--f-mono); font-weight: 700; font-size: var(--fs); border-radius: 4px; }
 .tile::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: var(--tile-line); }
 .tile.dim { color: var(--tile-dim); }
 .tile.sym { background: transparent; width: calc(var(--fs) * .5); }
@@ -198,46 +175,25 @@ body.nozh .zh { display: none !important; }
 @keyframes flip { from { transform: rotateX(-95deg); opacity: .2; } to { transform: none; opacity: 1; } }
 
 .timer { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; }
-.timer .t { font-family: var(--f-mono); font-weight: 700; font-size: 20px; font-variant-numeric: tabular-nums; min-width: 6.5ch; }
+.timer .t { font-family: var(--f-mono); font-weight: 700; font-size: 19px; font-variant-numeric: tabular-nums; min-width: 7ch; }
 .timer .bar { height: 10px; border-radius: 5px; background: var(--paper); border: 1px solid var(--line); overflow: hidden; }
-.timer .bar i { display: block; height: 100%; width: 100%; background: var(--signal); transition: width .1s linear; }
+.timer .bar i { display: block; height: 100%; width: 100%; background: var(--signal); }
 .timer .pot { font-family: var(--f-display); font-weight: 600; font-size: 16px; color: var(--muted); white-space: nowrap; }
-.timer .pot b { font-family: var(--f-mono); color: var(--ink); font-variant-numeric: tabular-nums; }
+.timer .pot b { font-family: var(--f-mono); color: var(--ink); font-variant-numeric: tabular-nums; display: inline-block; min-width: 4ch; text-align: right; }
 .timer.waiting .t { color: var(--muted); }
 
 .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
-.play {
-  display: flex; align-items: center; gap: 12px;
-  padding: 8px 20px 8px 8px;
-  border: 0; border-radius: 999px;
-  background: var(--signal); color: var(--signal-ink);
-  font-family: var(--f-display); font-weight: 700; font-size: 21px; letter-spacing: .02em;
-}
+.play { display: flex; align-items: center; gap: 12px; padding: 6px 20px 6px 6px; border: 0; border-radius: 999px; background: var(--signal); color: var(--signal-ink); font-family: var(--f-display); font-weight: 700; font-size: 20px; letter-spacing: .02em; }
 .play .zh { color: var(--signal-ink); opacity: .7; }
-.play .disc { width: 40px; height: 40px; border-radius: 50%; background: var(--signal-ink); display: grid; place-items: center; }
-.play .disc svg { width: 17px; height: 17px; fill: var(--signal); margin-left: 3px; }
+.play .disc { width: 38px; height: 38px; border-radius: 50%; background: var(--signal-ink); display: grid; place-items: center; }
+.play .disc svg { width: 16px; height: 16px; fill: var(--signal); margin-left: 3px; }
 .play.speaking .disc { animation: pulse 1s ease-in-out infinite; }
 @keyframes pulse { 50% { transform: scale(.86); } }
-.ghost {
-  display: flex; align-items: center; gap: 6px;
-  padding: 10px 16px; border-radius: 999px;
-  border: 1px solid var(--line); background: transparent;
-  font-size: 15px;
-}
+.ghost { display: flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 999px; border: 1px solid var(--line); background: transparent; font-size: 15px; }
 
-.options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .options.long { grid-template-columns: minmax(0, 1fr); }
-.opt {
-  display: flex; align-items: center; gap: 12px;
-  min-width: 0;
-  padding: 14px 16px;
-  border: 1.5px solid var(--line); border-radius: 12px;
-  background: var(--paper);
-  text-align: left;
-  font-family: var(--f-mono); font-weight: 700; font-size: clamp(18px, 3.6vw, 24px);
-  font-variant-numeric: tabular-nums;
-  overflow-wrap: anywhere;
-}
+.opt { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 12px; background: var(--paper); text-align: left; font-family: var(--f-mono); font-weight: 700; font-size: clamp(17px, 3.4vw, 22px); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .opt .k { font-family: var(--f-display); font-size: 14px; font-weight: 600; color: var(--muted); border: 1px solid var(--line); border-radius: 5px; padding: 0 6px; flex: none; }
 .opt:not(:disabled):hover { border-color: var(--ink); }
 .opt:disabled { cursor: default; }
@@ -245,95 +201,109 @@ body.nozh .zh { display: none !important; }
 .opt.wrong { background: var(--bad-soft); border-color: var(--bad); }
 .options.done .opt:not(.correct):not(.wrong) { opacity: .45; }
 
-.input-tag { font-family: var(--f-display); text-transform: uppercase; letter-spacing: .1em; font-size: 13px; color: var(--muted); margin-bottom: -10px; }
+.input-tag { font-family: var(--f-display); text-transform: uppercase; letter-spacing: .1em; font-size: 13px; color: var(--muted); margin-bottom: -8px; }
 .textans { display: flex; gap: 10px; }
-.textans input {
-  flex: 1; min-width: 0;
-  padding: 12px 14px;
-  border: 1.5px solid var(--line); border-radius: 12px;
-  background: var(--paper);
-  font-family: var(--f-mono); font-weight: 700; font-size: 22px;
-}
+.textans input { flex: 1; min-width: 0; padding: 11px 14px; border: 1.5px solid var(--line); border-radius: 12px; background: var(--paper); font-family: var(--f-mono); font-weight: 700; font-size: 22px; }
 .textans input:focus { border-color: var(--ink); outline: none; }
 .textans input.ok { border-color: var(--ok); background: var(--ok-soft); }
 .textans input.bad { border-color: var(--bad); background: var(--bad-soft); }
-.primary {
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  padding: 12px 22px; border-radius: 999px; border: 0;
-  background: var(--ink); color: var(--surface);
-  font-family: var(--f-display); font-weight: 700; font-size: 20px; letter-spacing: .03em;
-}
+.primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 22px; border-radius: 999px; border: 0; background: var(--ink); color: var(--surface); font-family: var(--f-display); font-weight: 700; font-size: 20px; letter-spacing: .03em; }
 .primary .zh { color: inherit; opacity: .7; }
 
-.feedback { border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 12px; }
-.verdict { margin: 0; font-family: var(--f-display); font-weight: 700; font-size: 28px; line-height: 1.1; text-wrap: balance; }
+/* right-hand panel in the game: waiting state, then feedback */
+.waitpanel { display: grid; justify-items: center; align-content: center; text-align: center; gap: 10px; min-height: 220px; color: var(--muted); }
+.waitpanel .badge { width: 88px; height: 88px; border-radius: 50%; display: grid; place-items: center; background: var(--c, var(--m-time)); color: var(--card-fg); }
+.waitpanel .badge svg { width: 46px; height: 46px; stroke-width: 1.7; }
+.waitpanel p { margin: 0; max-width: 34ch; }
+.waitpanel strong { color: var(--ink); font-family: var(--f-display); font-size: 22px; }
+.feedback { display: grid; gap: 10px; }
+.verdict { margin: 0; font-family: var(--f-display); font-weight: 700; font-size: 26px; line-height: 1.1; text-wrap: balance; }
 .verdict.ok { color: var(--ok); }
 .verdict.bad { color: var(--bad); }
 .verdict .zh { margin-left: 6px; }
-.transcript { margin: 0; font-size: 18px; line-height: 1.45; }
+.transcript { margin: 0; font-size: 17px; line-height: 1.4; }
 .transcript mark { background: var(--mark); color: var(--ink); padding: 0 3px; border-radius: 3px; }
 .label { font-family: var(--f-display); text-transform: uppercase; letter-spacing: .12em; font-size: 12px; color: var(--muted); display: block; margin-bottom: 2px; }
 .parts { display: flex; flex-wrap: wrap; gap: 6px; }
-.part { display: inline-flex; align-items: baseline; gap: 8px; padding: 4px 10px; border-radius: 8px; background: var(--paper); border: 1px solid var(--line); max-width: 100%; }
+.part { display: inline-flex; align-items: baseline; gap: 8px; padding: 3px 9px; border-radius: 8px; background: var(--paper); border: 1px solid var(--line); max-width: 100%; font-size: 15px; }
 .part .w { font-style: italic; overflow-wrap: anywhere; }
 .part .d { font-family: var(--f-mono); font-weight: 700; white-space: nowrap; }
-.hints { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
-.hints li { padding-left: 12px; border-left: 3px solid var(--signal); display: grid; gap: 2px; }
-.hints .zh { font-size: 15px; color: var(--ink); opacity: .85; }
+.hints { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 15px; }
+.hints li { padding-left: 10px; border-left: 3px solid var(--signal); display: grid; gap: 1px; }
+.hints .zh { font-size: 14px; color: var(--ink); opacity: .85; }
 
-.quit { justify-self: center; border: 0; background: none; color: var(--muted); font-size: 14px; text-decoration: underline; text-underline-offset: 3px; padding: 6px; }
+.gamefoot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; }
+.quit { border: 0; background: none; color: var(--muted); font-size: 14px; text-decoration: underline; text-underline-offset: 3px; padding: 4px; }
 .quit.armed { color: var(--bad); font-weight: 700; }
-
-.keys { margin: 0; color: var(--muted); font-size: 13px; text-align: center; }
+.keys { margin: 0; color: var(--muted); font-size: 13px; }
 .keys kbd { font-family: var(--f-mono); font-size: 12px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; }
 @media (hover: none) { .keys { display: none; } }
 .warn { margin: 0; padding: 10px 14px; border-radius: 10px; background: var(--bad-soft); color: var(--ink); font-size: 14px; }
 
 /* result */
-.result-head { text-align: center; justify-items: center; gap: 6px; }
-.big-score { font-family: var(--f-mono); font-weight: 700; font-size: clamp(56px, 16vw, 84px); line-height: 1; font-variant-numeric: tabular-nums; }
-.big-score small { font-size: .3em; color: var(--muted); font-weight: 500; }
-.record { margin: 4px 0 0; padding: 4px 14px; border-radius: 999px; background: var(--signal); color: var(--signal-ink); font-family: var(--f-display); font-weight: 700; font-size: 18px; letter-spacing: .04em; }
+.result-head { justify-items: center; text-align: center; gap: 8px; }
+.result-head .badge { width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center; background: var(--c, var(--m-time)); color: var(--card-fg); }
+.result-head .badge svg { width: 38px; height: 38px; stroke-width: 1.7; }
+.big-score { font-family: var(--f-mono); font-weight: 700; font-size: clamp(48px, 9vw, 68px); line-height: 1; font-variant-numeric: tabular-nums; }
+.big-score small { display: block; font-size: 15px; color: var(--muted); font-weight: 500; margin-top: 4px; }
+.record { margin: 0; padding: 3px 14px; border-radius: 999px; background: var(--signal); color: var(--signal-ink); font-family: var(--f-display); font-weight: 700; font-size: 18px; letter-spacing: .04em; }
 .record .zh { color: var(--signal-ink); opacity: .7; }
-.summary { margin: 0; color: var(--muted); }
+.summary { margin: 0; color: var(--muted); font-size: 15px; }
+.btnrow { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
 .res { margin: 0; padding: 0; list-style: none; display: grid; }
-.res > li { display: grid; gap: 6px; padding: 12px 0; border-top: 1px solid var(--line); }
+.res > li { display: grid; gap: 4px; padding: 5px 0; border-top: 1px solid var(--line); }
 .res > li:first-child { border-top: 0; padding-top: 0; }
-.res .row { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto auto; gap: 10px; align-items: center; }
-.res .n { font-family: var(--f-mono); color: var(--muted); font-size: 14px; }
-.res .a { font-family: var(--f-mono); font-weight: 700; font-size: 18px; overflow-wrap: anywhere; }
-.res .m { display: block; font-family: var(--f-body); font-weight: 400; font-size: 13px; color: var(--muted); }
-.res .p { font-family: var(--f-mono); font-weight: 700; font-size: 20px; min-width: 3ch; text-align: right; font-variant-numeric: tabular-nums; }
+.res .row { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto auto 48px; gap: 10px; align-items: center; }
+.res .n { font-family: var(--f-mono); color: var(--muted); font-size: 13px; }
+.res .a { font-family: var(--f-mono); font-weight: 700; font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.res .a .you { font-family: var(--f-body); font-weight: 400; font-size: 13px; color: var(--bad); margin-left: 8px; }
+.res .m { font-size: 13px; color: var(--muted); white-space: nowrap; text-align: right; }
+.res .p { font-family: var(--f-mono); font-weight: 700; font-size: 17px; text-align: right; font-variant-numeric: tabular-nums; }
 .res li.ok .p { color: var(--ok); }
 .res li.bad .p { color: var(--bad); }
-.res .you { margin: 0 0 0 36px; font-size: 14px; color: var(--bad); }
-.res .you span { font-family: var(--f-mono); font-weight: 700; }
-.res .say { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--line); background: transparent; display: grid; place-items: center; }
-.res .say svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.res details { margin-left: 36px; }
-.res summary { cursor: pointer; font-size: 14px; color: var(--muted); }
-.res details[open] summary { margin-bottom: 8px; }
-.res details > div { display: grid; gap: 10px; }
-.btnrow { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.res .say, .res .more { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--line); background: transparent; display: grid; place-items: center; }
+.res .more { width: auto; padding: 0 10px; font-size: 13px; color: var(--muted); white-space: nowrap; }
+.res .more[aria-expanded="true"] { border-color: var(--ink); color: var(--ink); }
+.res .detail { margin: 4px 0 6px 32px; display: grid; gap: 8px; }
+.res .actions { display: flex; gap: 4px; }
 
 /* settings */
 .back { justify-self: start; display: flex; align-items: center; gap: 6px; border: 0; background: none; padding: 4px 0; font-size: 16px; font-weight: 700; }
 input[type="range"] { width: 100%; accent-color: var(--signal); }
 .rate-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); }
 .rate-row b { font-family: var(--f-mono); color: var(--ink); }
-select { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--paper); font-size: 15px; }
+select { width: 100%; padding: 9px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--paper); font-size: 15px; }
 .check { display: flex; gap: 10px; align-items: flex-start; font-size: 15px; }
 .check input { width: 18px; height: 18px; margin-top: 3px; accent-color: var(--ink); flex: none; }
 .danger { justify-self: start; border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 8px 16px; font-size: 14px; color: var(--muted); }
 .danger.armed { border-color: var(--bad); color: var(--bad); font-weight: 700; }
 
+/* wide screens: two-column spreads */
+@media (min-width: 900px) {
+  .screen.split { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); }
+  .screen.split > .full { grid-column: 1 / -1; }
+  #screenResult.split { grid-template-columns: minmax(0, .8fr) minmax(0, 1.3fr); }
+  .gamegrid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 20px; }
+  .gamegrid > .side { border-left: 1px solid var(--line); padding-left: 20px; }
+  .card.game { padding: 18px 20px; }
+  .options.long { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .options.long .opt { font-size: 17px; padding: 11px 12px; gap: 8px; }
+}
+@media (max-width: 899px) {
+  .gamegrid { display: grid; gap: 14px; }
+  .gamegrid > .side { border-top: 1px solid var(--line); padding-top: 14px; }
+  .waitpanel { min-height: 0; }
+  .waitpanel .badge { display: none; }
+  .res .m { display: none; }
+}
 @media (max-width: 420px) {
-  .seg button { font-size: 14px; padding: 8px 4px; }
+  .brand .zh { display: none; }
+  .seg button { font-size: 14px; padding: 7px 4px; }
   .seg.big button { font-size: 17px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .tile.rev, .play.speaking .disc { animation: none; }
-  .timer .bar i { transition: none; }
+  .mcard { transition: none; }
 }
 </style>
 </head>
@@ -342,21 +312,21 @@ select { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid
   <header class="top">
     <button class="brand" id="home" type="button">Zahlenohr <span class="zh">德语数字听力</span></button>
     <button class="icon-btn" id="openSettings" type="button">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+      <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>
       Einstellungen
     </button>
   </header>
 
   <!-- START -->
-  <section class="screen" id="screenStart">
-    <div class="intro">
-      <h1>Hör genau hin: Uhrzeiten, Telefonnummern, Preise.</h1>
-      <p>10 Fragen pro Runde. Je schneller du richtig antwortest, desto mehr Punkte. <span class="zh">每轮 10 题，答得越快分数越高。</span></p>
-    </div>
+  <section class="screen split" id="screenStart">
     <div class="card">
+      <div class="intro">
+        <h1>Hör genau hin. Jede Millisekunde zählt.</h1>
+        <p>10 Fragen pro Runde. Je schneller du richtig antwortest, desto mehr Punkte. <span class="zh">每轮 10 题，答得越快分数越高。</span></p>
+      </div>
       <div class="field">
         <span class="flabel">Was willst du üben? <span class="zh">练习内容</span></span>
-        <div class="chips" id="modes"></div>
+        <div class="modes" id="modes"></div>
       </div>
       <div class="field">
         <span class="flabel">Schwierigkeit <span class="zh">难度</span></span>
@@ -368,10 +338,21 @@ select { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid
         Spiel starten <span class="zh">开始</span>
       </button>
     </div>
-    <div class="card">
-      <h2>Bestenliste <span class="zh">最高分</span> <span class="sub" id="hsLabel"></span></h2>
-      <ol class="hs" id="hsList"></ol>
-      <p class="empty" id="hsEmpty">Noch keine Runde in dieser Kombination gespielt. Dein erstes Ergebnis landet hier. <span class="zh">还没有成绩。</span></p>
+    <div class="col">
+      <div class="card">
+        <h2>Bestenliste <span class="zh">最高分</span> <span class="sub" id="hsLabel"></span></h2>
+        <ol class="hs" id="hsList"></ol>
+        <p class="empty" id="hsEmpty">Noch keine Runde in dieser Kombination. Dein erstes Ergebnis landet hier. <span class="zh">还没有成绩。</span></p>
+      </div>
+      <div class="card">
+        <h2>So zählt es <span class="zh">计分规则</span></h2>
+        <div class="rules">
+          <span>Die Uhr läuft, sobald der Satz zu Ende ist.</span>
+          <span>Richtig: <b>1000</b> Punkte minus 1 Punkt pro <b id="ruleMs">20</b> ms, mindestens <b>100</b>.</span>
+          <span>Falsch: <b>0</b> Punkte. Maximal <b>10.000</b> pro Runde.</span>
+          <span class="zh">句子读完后开始计时，每过一毫秒都会扣分。答错 0 分。</span>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -382,75 +363,85 @@ select { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid
       <div class="progress" id="progress" aria-hidden="true"></div>
       <span class="sc"><b id="runScore">0</b> Pkt.</span>
     </div>
-    <div class="card">
-      <div class="board">
-        <div class="board-head"><span id="boardMode">Uhrzeit</span><span id="boardRegion"></span></div>
-        <div class="tiles" id="tiles"></div>
-      </div>
-
-      <div class="timer waiting" id="timer">
-        <span class="t" id="timerTxt">0,0 s</span>
-        <span class="bar"><i id="timerBar"></i></span>
-        <span class="pot"><b id="potTxt">100</b> <span id="potLbl">Pkt. möglich</span></span>
-      </div>
-
-      <div class="controls">
-        <button class="play" id="play" type="button">
-          <span class="disc"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 1.5v13l11-6.5z"/></svg></span>
-          <span id="playLabel">Anhören <span class="zh">听</span></span>
-        </button>
-        <button class="ghost" id="slow" type="button">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h10"/><path d="M10 7l5 5-5 5"/><path d="M19 6v12"/></svg>
-          Langsam <span class="zh">慢速</span>
-        </button>
-      </div>
-      <p class="warn" id="ttsWarn" hidden></p>
-
-      <div class="options" id="options"></div>
-      <span class="input-tag" id="inputTag" hidden>Eintippen <span class="zh">输入答案</span></span>
-      <form class="textans" id="textForm" hidden autocomplete="off">
-        <input id="txt" type="text" aria-label="Deine Antwort">
-        <button class="primary" type="submit" id="txtBtn">Prüfen <span class="zh">检查</span></button>
-      </form>
-
-      <section class="feedback" id="feedback" hidden aria-live="polite">
-        <p class="verdict" id="verdict"></p>
-        <div>
-          <span class="label">Gesagt wurde <span class="zh">原句</span></span>
-          <p class="transcript" id="transcript"></p>
+    <div class="card game">
+      <div class="gamegrid">
+        <div class="col">
+          <div class="board">
+            <div class="board-head"><span id="boardMode">Uhrzeit</span><span id="boardRegion"></span></div>
+            <div class="tiles" id="tiles"></div>
+          </div>
+          <div class="timer waiting" id="timer">
+            <span class="t" id="timerTxt">0,00 s</span>
+            <span class="bar"><i id="timerBar"></i></span>
+            <span class="pot"><b id="potTxt">1000</b> <span id="potLbl">Pkt. möglich</span></span>
+          </div>
+          <div class="controls">
+            <button class="play" id="play" type="button">
+              <span class="disc"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 1.5v13l11-6.5z"/></svg></span>
+              <span id="playLabel">Anhören <span class="zh">听</span></span>
+            </button>
+            <button class="ghost" id="slow" type="button">
+              <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h10"/><path d="M10 7l5 5-5 5"/><path d="M19 6v12"/></svg>
+              Langsam <span class="zh">慢速</span>
+            </button>
+          </div>
+          <p class="warn" id="ttsWarn" hidden></p>
+          <div class="options" id="options"></div>
+          <span class="input-tag" id="inputTag" hidden>Eintippen <span class="zh">输入答案</span></span>
+          <form class="textans" id="textForm" hidden autocomplete="off">
+            <input id="txt" type="text" aria-label="Deine Antwort">
+            <button class="primary" type="submit" id="txtBtn">Prüfen <span class="zh">检查</span></button>
+          </form>
         </div>
-        <div class="parts" id="parts"></div>
-        <ul class="hints" id="hints"></ul>
-        <div><button class="primary" id="next" type="button">Weiter <span class="zh">下一题</span> →</button></div>
-      </section>
+        <div class="side">
+          <div class="waitpanel" id="waitPanel">
+            <span class="badge" id="waitBadge"></span>
+            <strong id="waitTitle">Hör gut zu</strong>
+            <p>Antworte, sobald du die Zahl erkannt hast. Ab dem Satzende kostet jede Millisekunde Punkte. <span class="zh">听完马上回答，每一毫秒都在扣分。</span></p>
+          </div>
+          <section class="feedback" id="feedback" hidden aria-live="polite">
+            <p class="verdict" id="verdict"></p>
+            <div>
+              <span class="label">Gesagt wurde <span class="zh">原句</span></span>
+              <p class="transcript" id="transcript"></p>
+            </div>
+            <div class="parts" id="parts"></div>
+            <ul class="hints" id="hints"></ul>
+            <div><button class="primary" id="next" type="button">Weiter <span class="zh">下一题</span> →</button></div>
+          </section>
+        </div>
+      </div>
     </div>
-    <button class="quit" id="quit" type="button">Runde abbrechen</button>
-    <p class="keys"><kbd>Leertaste</kbd> nochmal · <kbd>L</kbd> langsam · <kbd>1</kbd>–<kbd>4</kbd> antworten · <kbd>Enter</kbd> weiter</p>
+    <div class="gamefoot">
+      <button class="quit" id="quit" type="button">Runde abbrechen</button>
+      <p class="keys"><kbd>Leertaste</kbd> nochmal · <kbd>L</kbd> langsam · <kbd>1</kbd>–<kbd>4</kbd> antworten · <kbd>Enter</kbd> weiter</p>
+    </div>
   </section>
 
   <!-- RESULT -->
-  <section class="screen" id="screenResult" hidden>
+  <section class="screen split" id="screenResult" hidden>
     <div class="card result-head">
+      <span class="badge" id="resBadge"></span>
       <span class="label" id="resLabel">Ergebnis</span>
-      <div class="big-score"><span id="resTotal">0</span><small> / 1000</small></div>
+      <div class="big-score"><span id="resTotal">0</span><small>von 10.000 Punkten</small></div>
       <p class="record" id="resRecord" hidden></p>
       <p class="summary" id="resSummary"></p>
+      <div class="btnrow">
+        <button class="start" id="again" type="button">Nochmal <span class="zh">再玩一次</span></button>
+        <button class="ghost" id="toStart" type="button">Zum Start</button>
+      </div>
     </div>
     <div class="card">
       <h2>Deine Antworten <span class="zh">每题得分</span></h2>
       <ol class="res" id="resList"></ol>
     </div>
-    <div class="btnrow">
-      <button class="start" id="again" type="button">Nochmal spielen <span class="zh">再玩一次</span></button>
-      <button class="ghost" id="toStart" type="button">Zum Start</button>
-    </div>
   </section>
 
   <!-- SETTINGS -->
-  <section class="screen" id="screenSettings" hidden>
-    <button class="back" id="back" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg> Zurück</button>
+  <section class="screen split" id="screenSettings" hidden>
+    <button class="back full" id="back" type="button"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg> Zurück</button>
     <div class="card">
-      <h2>Einstellungen <span class="zh">设置</span></h2>
+      <h2>Aussprache <span class="zh">发音</span></h2>
       <div class="field">
         <span class="flabel">Region <span class="zh">地区说法</span></span>
         <div class="seg" id="regionSeg">
@@ -470,14 +461,19 @@ select { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid
         <input type="range" id="rate" min="0.7" max="1.3" step="0.05" value="1">
         <div class="rate-row"><span>langsam</span><b id="rateVal">1.00×</b><span>schnell</span></div>
       </div>
-      <label class="check"><input type="checkbox" id="ctx"> <span>Ganze Sätze statt nur der Zahl <span class="zh">用完整句子</span></span></label>
-      <label class="check"><input type="checkbox" id="noise"> <span>Hintergrundrauschen wie am Bahnhof <span class="zh">背景噪音</span></span></label>
-      <label class="check"><input type="checkbox" id="zh"> <span>Chinesische Hinweise <span class="zh">中文提示</span></span></label>
     </div>
-    <div class="card">
-      <h2>Bestenliste <span class="zh">最高分</span></h2>
-      <p class="note">Die Bestenliste ist nur in diesem Browser gespeichert.</p>
-      <button class="danger" id="clearHs" type="button">Bestenliste löschen</button>
+    <div class="col">
+      <div class="card">
+        <h2>Optionen <span class="zh">选项</span></h2>
+        <label class="check"><input type="checkbox" id="ctx"> <span>Ganze Sätze statt nur der Zahl <span class="zh">用完整句子</span></span></label>
+        <label class="check"><input type="checkbox" id="noise"> <span>Hintergrundrauschen wie am Bahnhof <span class="zh">背景噪音</span></span></label>
+        <label class="check"><input type="checkbox" id="zh"> <span>Chinesische Hinweise <span class="zh">中文提示</span></span></label>
+      </div>
+      <div class="card">
+        <h2>Bestenliste <span class="zh">最高分</span></h2>
+        <p class="note">Die Bestenliste ist nur in diesem Browser gespeichert.</p>
+        <button class="danger" id="clearHs" type="button">Bestenliste löschen</button>
+      </div>
     </div>
   </section>
 </div>
@@ -984,6 +980,17 @@ const MODES = [
   ['mix', 'Mix', '混合', '-----']
 ];
 const MODE = Object.fromEntries(MODES.map(m => [m[0], { de: m[1], zh: m[2], blank: m[3] }]));
+const ICON = {
+  time: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  phone: '<rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18h2"/>',
+  number: '<path d="M5 9h14M5 15h14M10 4 8 20M16 4l-2 16"/>',
+  price: '<path d="M17 6.5a7 7 0 1 0 0 11"/><path d="M4 10h9M4 14h9"/>',
+  date: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  mix: '<path d="M3 7h4l10 10h4M3 17h4l3-3M14 10l3-3h4M18 4l3 3-3 3M18 14l3 3-3 3"/>'
+};
+const icon = (m, cls) => `<svg class="i ${cls || ''}" viewBox="0 0 24 24" aria-hidden="true">${ICON[m]}</svg>`;
+const modeColor = m => `var(--m-${m})`;
+
 const DIFF = {
   easy:   { de: 'Leicht', zh: '简单', rate: .88, slow: true,  textShare: 0,  note: 'Vier Antworten zur Auswahl, etwas langsamer gesprochen.', noteZh: '四选一，语速稍慢。' },
   medium: { de: 'Mittel', zh: '中等', rate: 1,   slow: true,  textShare: 0,  note: 'Vier Antworten zur Auswahl, normales Tempo.', noteZh: '四选一，正常语速。' },
@@ -992,13 +999,14 @@ const DIFF = {
 const ROUND_LEN = 10;
 
 /* ---------- scoring ---------- */
-// Full 100 points if answered within the grace time after the sentence ends, then down to 10 points.
-function pointsFor(sec, typed) {
-  const grace = typed ? 6 : 3, end = typed ? 30 : 20;
-  if (sec <= grace) return 100;
-  if (sec >= end) return 10;
-  return Math.round(100 - 90 * (sec - grace) / (end - grace));
+// 1000 points minus 1 point per 20 ms (30 ms for typed answers) from the end of the sentence; a correct answer keeps at least 100.
+const MAX_PTS = 1000, MIN_PTS = 100;
+const msPerPoint = typed => typed ? 30 : 20;
+function pointsFor(ms, typed) {
+  return Math.max(MIN_PTS, Math.round(MAX_PTS - ms / msPerPoint(typed)));
 }
+const secTxt = ms => (ms / 1000).toFixed(2).replace('.', ',') + ' s';
+const fmtPts = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 
 /* ---------- voices ---------- */
 let VOICES = [];
@@ -1037,7 +1045,7 @@ function renderVoiceSelect() {
   if (!hasTTS) { st.textContent = 'Dieser Browser hat keine Sprachausgabe. Öffne die Seite in Edge, Chrome oder Safari.'; return; }
   if (!VOICES.length) { st.textContent = 'Noch keine deutsche Stimme gefunden. Falls nichts zu hören ist: in den Systemeinstellungen eine deutsche Sprachausgabe installieren oder Microsoft Edge verwenden.'; return; }
   let t = `Gefunden: ${groups.AT.length} österreichische, ${groups.DE.length} deutsche, ${groups.CH.length} Schweizer Stimme${VOICES.length === 1 ? '' : 'n'}.`;
-  if (!groups.AT.length) t += ' Österreichische Stimmen (Ingrid, Jonas) gibt es z. B. in Microsoft Edge. Bis dahin klingen die österreichischen Sätze mit einer deutschen Stimme.';
+  if (!groups.AT.length) t += ' Österreichische Stimmen (Ingrid, Jonas) gibt es z. B. in Microsoft Edge.';
   st.textContent = t;
 }
 
@@ -1089,7 +1097,8 @@ let highscores = [];
 let round = null;
 let screen = 'Start', prevScreen = 'Start';
 let rafId = 0;
-const KEY_SET = 'zahlenohr.settings.v2', KEY_HS = 'zahlenohr.highscores.v1';
+// v2: scores are out of 10,000 (per-millisecond scoring), so older lists are not mixed in.
+const KEY_SET = 'zahlenohr.settings.v2', KEY_HS = 'zahlenohr.highscores.v2';
 function save() { try { localStorage.setItem(KEY_SET, JSON.stringify(settings)); } catch (e) {} }
 function saveHs() { try { localStorage.setItem(KEY_HS, JSON.stringify(highscores)); } catch (e) {} }
 function load() {
@@ -1109,10 +1118,16 @@ function show(name) {
 }
 
 function renderStart() {
-  $('#modes').innerHTML = MODES.map(m => `<button type="button" class="chip" data-mode="${m[0]}" aria-pressed="${settings.mode === m[0]}">${m[1]} <span class="zh">${m[2]}</span></button>`).join('');
+  // A photo at img/<mode>.jpg is used as the card background when present; otherwise the card shows its illustration.
+  $('#modes').innerHTML = MODES.map(m => `<button type="button" class="mcard" data-mode="${m[0]}" aria-pressed="${settings.mode === m[0]}">
+      <img class="photo" src="img/${m[0]}.jpg" alt="" onerror="this.nextElementSibling.remove();this.remove()"><span class="shade"></span>
+      ${icon(m[0], 'art')}
+      <span class="t">${m[1]} <span class="zh">${m[2]}</span></span>
+    </button>`).join('');
   $('#diffSeg').innerHTML = Object.entries(DIFF).map(([k, d]) => `<button type="button" data-v="${k}" aria-pressed="${settings.diff === k}">${d.de} <span class="zh">${d.zh}</span></button>`).join('');
   const d = DIFF[settings.diff];
   $('#diffNote').innerHTML = `${esc(d.note)} <span class="zh">${esc(d.noteZh)}</span>`;
+  $('#ruleMs').textContent = settings.diff === 'hard' ? '20 (eingetippt: 30)' : '20';
   renderHs();
 }
 function renderHs(freshId) {
@@ -1120,9 +1135,8 @@ function renderHs(freshId) {
   $('#hsLabel').textContent = `${MODE[settings.mode].de} · ${DIFF[settings.diff].de}`;
   $('#hsEmpty').hidden = list.length > 0;
   $('#hsList').innerHTML = list.map(h => {
-    const dt = new Date(h.date);
-    const when = dt.toLocaleDateString('de-AT', { day: 'numeric', month: 'short' });
-    return `<li class="${h.id === freshId ? 'fresh' : ''}"><span class="pts">${h.score}</span> <span class="when">${h.correct}/10 richtig · ${esc(when)}</span></li>`;
+    const when = new Date(h.date).toLocaleDateString('de-AT', { day: 'numeric', month: 'short' });
+    return `<li class="${h.id === freshId ? 'fresh' : ''}"><span class="pts">${fmtPts(h.score)}</span> <span class="when">${h.correct}/10 richtig · ${esc(when)}</span></li>`;
   }).join('');
 }
 function renderSettings() {
@@ -1170,7 +1184,7 @@ function nextQuestion() {
   q.voiceURI = v ? v.voiceURI : null;
   q.rate = settings.rate * diff.rate * (1 + (R() - .5) * .08);
   q.pitch = .94 + R() * .12;
-  const item = { q, input: chance(diff.textShare) ? 'text' : 'mc', tStart: 0, answered: false, user: '', ok: false, sec: 0, pts: 0 };
+  const item = { q, input: chance(diff.textShare) ? 'text' : 'mc', tStart: 0, answered: false, user: '', ok: false, ms: 0, pts: 0 };
   round.items.push(item);
 
   $('#qNum').textContent = round.i + 1;
@@ -1179,6 +1193,9 @@ function nextQuestion() {
   $('#boardRegion').textContent = region === 'AT' ? 'Österreich' : 'Deutschland';
   renderBoard(MODE[mode].blank, false);
   $('#feedback').hidden = true;
+  $('#waitPanel').hidden = false;
+  const badge = $('#waitBadge'); badge.style.setProperty('--c', modeColor(mode)); badge.innerHTML = icon(mode);
+  $('#waitTitle').textContent = item.input === 'text' ? 'Hör zu und tipp die Antwort ein' : 'Hör gut zu';
   $('#slow').hidden = !diff.slow;
   $('#playLabel').innerHTML = 'Anhören <span class="zh">听</span>';
   resetTimer();
@@ -1205,7 +1222,7 @@ function play(slow) {
   const q = it.q;
   $('#playLabel').innerHTML = 'Nochmal <span class="zh">再听</span>';
   speak(q.text, q.voiceURI, q.rate * (slow ? .7 : 1), q.pitch, () => {
-    // The timer starts when the sentence has been read out the first time.
+    // The clock starts when the sentence has been read out the first time.
     if (!it.tStart && !it.answered && it === cur()) { it.tStart = performance.now(); startTimer(); }
   });
 }
@@ -1213,21 +1230,22 @@ function play(slow) {
 function resetTimer() {
   cancelAnimationFrame(rafId);
   $('#timer').classList.add('waiting');
-  $('#timerTxt').textContent = 'hör zu';
+  $('#timerTxt').textContent = 'hör zu …';
   $('#timerBar').style.width = '100%';
-  $('#potTxt').textContent = '100';
+  $('#potTxt').textContent = fmtPts(MAX_PTS);
   $('#potLbl').textContent = 'Pkt. möglich';
 }
 function startTimer() {
   $('#timer').classList.remove('waiting');
   const it = cur();
+  const typed = it.input === 'text';
   const tick = () => {
     if (!it || it.answered || it !== cur()) return;
-    const s = (performance.now() - it.tStart) / 1000;
-    const p = pointsFor(s, it.input === 'text');
-    $('#timerTxt').textContent = sec1(s) + ' s';
-    $('#potTxt').textContent = p;
-    $('#timerBar').style.width = ((p - 10) / 90 * 100) + '%';
+    const ms = performance.now() - it.tStart;
+    const p = pointsFor(ms, typed);
+    $('#timerTxt').textContent = secTxt(ms);
+    $('#potTxt').textContent = fmtPts(p);
+    $('#timerBar').style.width = ((p - MIN_PTS) / (MAX_PTS - MIN_PTS) * 100) + '%';
     rafId = requestAnimationFrame(tick);
   };
   tick();
@@ -1238,16 +1256,17 @@ function submit(val) {
   if (!it || it.answered) return;
   if (it.input === 'text' && !String(val).trim()) return;
   const q = it.q;
+  const now = performance.now();
   it.answered = true;
   cancelAnimationFrame(rafId);
-  it.sec = it.tStart ? (performance.now() - it.tStart) / 1000 : 0;
+  it.ms = it.tStart ? now - it.tStart : 0;
   it.user = String(val).trim();
   it.ok = it.input === 'mc' ? val === q.answer : q.check(val);
-  it.pts = it.ok ? pointsFor(it.sec, it.input === 'text') : 0;
+  it.pts = it.ok ? pointsFor(it.ms, it.input === 'text') : 0;
   round.score += it.pts;
-  $('#runScore').textContent = round.score;
-  $('#timerTxt').textContent = sec1(it.sec) + ' s';
-  $('#potTxt').textContent = it.pts;
+  $('#runScore').textContent = fmtPts(round.score);
+  $('#timerTxt').textContent = secTxt(it.ms);
+  $('#potTxt').textContent = fmtPts(it.pts);
   $('#potLbl').textContent = 'Pkt.';
   $('#timer').classList.remove('waiting');
   $('#progress').children[round.i].className = it.ok ? 'ok' : 'bad';
@@ -1267,7 +1286,7 @@ function submit(val) {
   const vd = $('#verdict');
   vd.className = 'verdict ' + (it.ok ? 'ok' : 'bad');
   vd.innerHTML = it.ok
-    ? `Richtig! +${it.pts} <span class="zh">答对了</span>`
+    ? `Richtig! +${fmtPts(it.pts)} <span class="zh">答对了</span>`
     : `Falsch. Richtig ist ${esc(q.answer)}.<span class="zh">答错了</span>`;
   $('#transcript').innerHTML = transcriptHtml(q);
   // Explanations only after a mistake, to keep the round quick.
@@ -1276,6 +1295,7 @@ function submit(val) {
   $('#hints').innerHTML = it.ok ? '' : hintsHtml(q);
   $('#hints').hidden = it.ok;
   $('#next').innerHTML = round.i === ROUND_LEN - 1 ? 'Ergebnis ansehen <span class="zh">看成绩</span> →' : 'Weiter <span class="zh">下一题</span> →';
+  $('#waitPanel').hidden = true;
   $('#feedback').hidden = false;
   setTimeout(() => $('#next').focus({ preventScroll: true }), 30);
 }
@@ -1287,20 +1307,19 @@ function transcriptHtml(q) {
 const partsHtml = q => q.parts.map(p => `<span class="part"><span class="w">${esc(p.w)}</span><span class="d">${esc(p.d)}</span></span>`).join('');
 const hintsHtml = q => q.hints.map(h => `<li><span>${esc(h.de)}</span><span class="zh">${esc(h.zh)}</span></li>`).join('');
 
-const SPEAKER = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
+const SPEAKER = '<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
 
 function finishRound() {
   stopSpeech();
   const items = round.items;
   const correct = items.filter(i => i.ok).length;
-  const okTimes = items.filter(i => i.ok).map(i => i.sec);
+  const okTimes = items.filter(i => i.ok).map(i => i.ms);
   const avg = okTimes.length ? okTimes.reduce((a, b) => a + b, 0) / okTimes.length : 0;
   const entry = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), score: round.score, correct, mode: round.mode, diff: round.diff, date: Date.now() };
   const same = highscores.filter(h => h.mode === round.mode && h.diff === round.diff);
   const prevBest = same.length ? Math.max(...same.map(h => h.score)) : -1;
   const rank = same.filter(h => h.score > entry.score).length + 1;
   highscores.push(entry);
-  // keep the best 10 per mode/difficulty
   const keep = [];
   for (const m of Object.keys(MODE)) for (const d of Object.keys(DIFF)) {
     keep.push(...highscores.filter(h => h.mode === m && h.diff === d).sort((a, b) => b.score - a.score).slice(0, 10));
@@ -1309,27 +1328,31 @@ function finishRound() {
   saveHs();
   round.entryId = entry.id;
 
-  $('#resLabel').textContent = `Ergebnis · ${MODE[round.mode].de} · ${DIFF[round.diff].de}`;
-  $('#resTotal').textContent = round.score;
+  const badge = $('#resBadge'); badge.style.setProperty('--c', modeColor(round.mode)); badge.innerHTML = icon(round.mode);
+  $('#resLabel').textContent = `${MODE[round.mode].de} · ${DIFF[round.diff].de}`;
+  $('#resTotal').textContent = fmtPts(round.score);
   const rec = $('#resRecord');
   if (round.score > prevBest && round.score > 0) { rec.innerHTML = 'Neuer Rekord! <span class="zh">新纪录！</span>'; rec.hidden = false; }
   else if (rank <= 5 && round.score > 0) { rec.innerHTML = `Platz ${rank} in der Bestenliste <span class="zh">第 ${rank} 名</span>`; rec.hidden = false; }
   else rec.hidden = true;
-  $('#resSummary').innerHTML = `${correct} von 10 richtig` + (okTimes.length ? ` · im Schnitt ${sec1(avg)} s pro richtiger Antwort` : '') + ` <span class="zh">答对 ${correct} 题</span>`;
+  $('#resSummary').innerHTML = `${correct} von 10 richtig` + (okTimes.length ? ` · im Schnitt ${secTxt(avg)}` : '') + ` <span class="zh">答对 ${correct} 题</span>`;
 
   $('#resList').innerHTML = items.map((it, i) => {
     const q = it.q;
     return `<li class="${it.ok ? 'ok' : 'bad'}">
       <div class="row">
         <span class="n">${i + 1}</span>
-        <span class="a">${esc(q.answer)}<span class="m">${MODE[q.mode].de} · ${it.input === 'text' ? 'eingetippt · ' : ''}${it.ok ? sec1(it.sec) + ' s' : 'falsch'}</span></span>
-        <button type="button" class="say" data-i="${i}" aria-label="Noch einmal anhören">${SPEAKER}</button>
-        <span class="p">${it.pts}</span>
+        <span class="a" title="${esc(q.answer)}">${esc(q.answer)}${it.ok ? '' : `<span class="you">du: ${esc(it.user || '–')}</span>`}</span>
+        <span class="m">${MODE[q.mode].de}${it.input === 'text' ? ' · getippt' : ''} · ${secTxt(it.ms)}</span>
+        <span class="actions">
+          <button type="button" class="say" data-i="${i}" aria-label="Noch einmal anhören">${SPEAKER}</button>
+          <button type="button" class="more" data-i="${i}" aria-expanded="false">Warum?</button>
+        </span>
+        <span class="p">${fmtPts(it.pts)}</span>
       </div>
-      ${it.ok ? '' : `<p class="you">Deine Antwort: <span>${esc(it.user || '–')}</span></p>`}
-      <details><summary>Satz und Erklärung <span class="zh">原句和解释</span></summary>
-        <div><p class="transcript">${transcriptHtml(q)}</p>${q.parts.length ? `<div class="parts">${partsHtml(q)}</div>` : ''}<ul class="hints">${hintsHtml(q)}</ul></div>
-      </details>
+      <div class="detail" id="det${i}" hidden>
+        <p class="transcript">${transcriptHtml(q)}</p>${q.parts.length ? `<div class="parts">${partsHtml(q)}</div>` : ''}<ul class="hints">${hintsHtml(q)}</ul>
+      </div>
     </li>`;
   }).join('');
   show('Result');
@@ -1362,8 +1385,11 @@ function bind() {
     disarmQuit(); stopSpeech(); cancelAnimationFrame(rafId); round = null; renderStart(); show('Start');
   });
   $('#resList').addEventListener('click', e => {
-    const b = e.target.closest('button.say'); if (!b || !round) return;
-    const q = round.items[+b.dataset.i].q; speak(q.text, q.voiceURI, q.rate, q.pitch);
+    if (!round) return;
+    const say = e.target.closest('button.say');
+    if (say) { const q = round.items[+say.dataset.i].q; speak(q.text, q.voiceURI, q.rate, q.pitch); return; }
+    const more = e.target.closest('button.more');
+    if (more) { const d = $('#det' + more.dataset.i); d.hidden = !d.hidden; more.setAttribute('aria-expanded', String(!d.hidden)); }
   });
 
   $('#regionSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; settings.region = b.dataset.v; save(); renderSettings(); });
