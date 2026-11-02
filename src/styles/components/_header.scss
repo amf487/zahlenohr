@@ -1,0 +1,43 @@
+@use '../abstracts/mixins' as *;
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 42px;
+
+  &__brand {
+    border: 0;
+    background: none;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    @include display(26px);
+    letter-spacing: -0.01em;
+
+    .zh {
+      font-size: 14px;
+
+      @include small {
+        display: none;
+      }
+    }
+  }
+
+  &__logo {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, var(--gold), var(--gold-2));
+    color: #2a1a00;
+    box-shadow: 0 3px 0 var(--gold-deep);
+    font-family: var(--f-mono);
+    font-style: normal;
+    font-size: 15px;
+    font-weight: 800;
+  }
+}

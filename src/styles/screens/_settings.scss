@@ -1,0 +1,75 @@
+@use '../abstracts/mixins' as *;
+
+.preview {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.option-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+
+  @include phone {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.split-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+// Sentence overview
+.stock {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+
+  th,
+  td {
+    padding: 4px 8px;
+    text-align: right;
+    border-bottom: 1px solid var(--edge);
+  }
+
+  thead th {
+    @include caps-label(12px, 0.08em);
+  }
+
+  tbody th {
+    text-align: left;
+    font-weight: 500;
+  }
+
+  td {
+    font-family: var(--f-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__total {
+    color: var(--gold);
+    font-weight: 800;
+  }
+
+  tr:last-child {
+    th,
+    td {
+      border-bottom: 0;
+    }
+  }
+}
+
+.screen--settings .note b {
+  color: var(--gold);
+  font-family: var(--f-mono);
+}

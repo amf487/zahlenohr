@@ -1,0 +1,75 @@
+// Tooltip from the `data-tip` attribute; shown on hover and keyboard focus.
+// `--tx` shifts it horizontally so it stays on screen at the edges.
+.tip {
+  position: relative;
+  --tx: -50%;
+
+  &::after {
+    content: attr(data-tip);
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 10px);
+    z-index: 30;
+    width: max-content;
+    max-width: 240px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #1a1040;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+    font: 500 13px/1.35 var(--f-body);
+    font-style: normal;
+    text-transform: none;
+    letter-spacing: 0;
+    white-space: normal;
+    text-align: left;
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(var(--tx), 4px);
+    transition:
+      opacity 0.15s,
+      transform 0.15s;
+  }
+
+  &:hover::after,
+  &:focus-visible::after {
+    opacity: 1;
+    transform: translate(var(--tx), 0);
+  }
+
+  &--below {
+    --tx: 0;
+
+    &::after {
+      left: auto;
+      right: 0;
+      bottom: auto;
+      top: calc(100% + 10px);
+    }
+  }
+}
+
+// In button groups, keep the outer tooltips inside the group and show them after a tap too.
+.segmented .tip {
+  &:focus::after {
+    opacity: 1;
+    transform: translate(var(--tx), 0);
+  }
+
+  &:first-child {
+    --tx: 0;
+
+    &::after {
+      left: 0;
+    }
+  }
+
+  &:last-child {
+    --tx: 0;
+
+    &::after {
+      left: auto;
+      right: 0;
+    }
+  }
+}

@@ -1,0 +1,61 @@
+// Design tokens as CSS custom properties, so they can also be changed at runtime.
+// The app deliberately has one dark "arcade" look.
+:root {
+  color-scheme: dark;
+
+  // background
+  --bg-top: #1a0f45;
+  --bg-bottom: #0a0620;
+  --glow-a: rgba(124, 77, 255, 0.38);
+  --glow-b: rgba(0, 194, 255, 0.2);
+
+  // surfaces
+  --panel: rgba(255, 255, 255, 0.06);
+  --panel-2: rgba(255, 255, 255, 0.1);
+  --edge: rgba(255, 255, 255, 0.12);
+  --sink: rgba(0, 0, 0, 0.38);
+
+  // text
+  --ink: #f5f2ff;
+  --muted: #aba4cf;
+
+  // accents
+  --gold: #ffc93c;
+  --gold-2: #ffaa00;
+  --gold-deep: #b87400;
+  --go: #5be36b;
+  --go-2: #22b04a;
+  --go-deep: #137a2f;
+  --go-ink: #04230d;
+  --violet: #8a6bff;
+  --violet-2: #6343f0;
+  --violet-deep: #3f25b5;
+
+  // states
+  --ok: #4be38a;
+  --ok-soft: rgba(75, 227, 138, 0.16);
+  --bad: #ff5a6e;
+  --bad-soft: rgba(255, 90, 110, 0.16);
+  --mark: rgba(255, 201, 60, 0.28);
+
+  // split-flap board
+  --board: #07051a;
+  --tile: #16123a;
+  --tile-fg: #ffd866;
+  --tile-dim: #3a3470;
+  --tile-line: #05031a;
+  --board-label: #8f86c9;
+
+  // fallback gradient for mode colours (each quiz sets --a / --b inline)
+  --mode-a: #5c86ff;
+  --mode-b: #2b3fd0;
+  --card-fg: #ffffff;
+
+  // type
+  --f-display: 'Rubik', 'Arial Black', 'PingFang SC', 'Noto Sans SC', sans-serif;
+  --f-body:
+    'Rubik', system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Noto Sans SC', 'Microsoft YaHei',
+    sans-serif;
+  --f-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --f-zh: 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+}

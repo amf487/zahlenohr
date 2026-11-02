@@ -1,0 +1,17 @@
+// Confetti for a new record (pieces are created in src/ui/fx.ts).
+.confetti {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+  overflow: hidden;
+
+  i {
+    position: absolute;
+    top: -20px;
+    width: 9px;
+    height: 14px;
+    border-radius: 2px;
+    animation: fall linear forwards;
+  }
+}

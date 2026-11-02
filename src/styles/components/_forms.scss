@@ -1,0 +1,118 @@
+@use '../abstracts/mixins' as *;
+
+.field {
+  display: grid;
+  gap: 8px;
+
+  &__label {
+    @include caps-label;
+    display: flex;
+    gap: 6px;
+    align-items: baseline;
+  }
+}
+
+// Row of toggle buttons (difficulty, region).
+.segmented {
+  display: flex;
+  gap: 8px;
+
+  button {
+    flex: 1;
+    padding: 9px 8px;
+    border-radius: 12px;
+    border: 1px solid var(--edge);
+    background: var(--panel);
+    color: var(--muted);
+    font-weight: 700;
+    font-size: 15px;
+    white-space: nowrap;
+    transition: transform 0.08s;
+    @include pressable(4px);
+
+    &[aria-pressed='true'] {
+      background: linear-gradient(180deg, var(--violet), var(--violet-2));
+      border-color: transparent;
+      color: #fff;
+      box-shadow:
+        0 4px 0 var(--violet-deep),
+        0 0 18px rgba(138, 107, 255, 0.45);
+
+      .zh {
+        color: inherit;
+        opacity: 0.8;
+      }
+    }
+
+    @include small {
+      font-size: 14px;
+      padding: 8px 4px;
+    }
+  }
+
+  &--big button {
+    @include display(17px);
+    padding: 10px 6px;
+
+    @include small {
+      font-size: 15px;
+    }
+  }
+
+  &--wrap {
+    @include phone {
+      flex-wrap: wrap;
+
+      button {
+        flex: 1 1 40%;
+      }
+    }
+  }
+}
+
+select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--edge);
+  background: #1a1240;
+  font-size: 15px;
+}
+
+input[type='range'] {
+  width: 100%;
+  accent-color: var(--gold);
+}
+
+.range-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--muted);
+
+  b {
+    font-family: var(--f-mono);
+    color: var(--gold);
+  }
+}
+
+// Checkbox as a panel row.
+.toggle {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  line-height: 1.3;
+  font-size: 15px;
+  padding: 9px 12px;
+  border-radius: 12px;
+  background: var(--panel);
+  cursor: pointer;
+
+  input {
+    width: 20px;
+    height: 20px;
+    margin-top: 1px;
+    accent-color: var(--go-2);
+    flex: none;
+  }
+}

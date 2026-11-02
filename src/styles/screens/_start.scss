@@ -1,0 +1,89 @@
+@use '../abstracts/mixins' as *;
+
+.intro {
+  h1 {
+    margin: 0;
+    @include display(clamp(28px, 4.2vw, 40px));
+    line-height: 0.98;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+
+    em {
+      font-style: italic;
+      @include gradient-text(linear-gradient(90deg, var(--gold), #ff7ab0));
+    }
+  }
+
+  p {
+    margin: 6px 0 0;
+    color: var(--muted);
+    font-size: 15px;
+  }
+}
+
+// Top 5 with gold, silver and bronze places.
+.highscores {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+  counter-reset: hs;
+
+  li {
+    counter-increment: hs;
+    display: grid;
+    grid-template-columns: 30px auto 1fr;
+    gap: 12px;
+    align-items: center;
+    padding: 7px 12px 7px 8px;
+    border-radius: 12px;
+    background: var(--panel);
+
+    &::before {
+      content: counter(hs);
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-family: var(--f-mono);
+      font-weight: 800;
+      font-size: 13px;
+      background: var(--panel-2);
+    }
+
+    &:nth-child(1)::before {
+      background: linear-gradient(135deg, var(--gold), var(--gold-2));
+      color: #2a1a00;
+    }
+
+    &:nth-child(2)::before {
+      background: linear-gradient(135deg, #e9edf7, #aeb6cc);
+      color: #1a1f2e;
+    }
+
+    &:nth-child(3)::before {
+      background: linear-gradient(135deg, #f0a86a, #b5652a);
+      color: #2a1300;
+    }
+
+    &.is-fresh {
+      background: var(--mark);
+      box-shadow: 0 0 0 1px var(--gold);
+    }
+  }
+
+  &__points {
+    font-family: var(--f-mono);
+    font-weight: 800;
+    font-size: 18px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__meta {
+    color: var(--muted);
+    font-size: 13px;
+    text-align: right;
+  }
+}

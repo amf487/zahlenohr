@@ -1,0 +1,84 @@
+// Breakpoints and shared style patterns.
+$wide: 900px; // two-column spreads from here
+$phone: 520px;
+$small: 420px;
+
+@mixin wide {
+  @media (min-width: $wide) {
+    @content;
+  }
+}
+
+@mixin narrow {
+  @media (max-width: $wide - 1) {
+    @content;
+  }
+}
+
+@mixin phone {
+  @media (max-width: $phone) {
+    @content;
+  }
+}
+
+@mixin small {
+  @media (max-width: $small) {
+    @content;
+  }
+}
+
+/// Bold italic capitals used for headings, buttons and labels.
+@mixin display($size: null, $weight: 900) {
+  font-family: var(--f-display);
+  font-weight: $weight;
+  font-style: italic;
+  text-transform: uppercase;
+  @if $size {
+    font-size: $size;
+  }
+}
+
+/// Small spaced-out caps label.
+@mixin caps-label($size: 13px, $spacing: 0.1em) {
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-size: $size;
+  text-transform: uppercase;
+  letter-spacing: $spacing;
+  color: var(--muted);
+}
+
+/// The chunky 3D look: a solid "edge" below that disappears when pressed.
+/// `$extra` adds further shadows (glow, inner highlight) that stay while pressed.
+@mixin pressable($depth: 4px, $edge: var(--sink), $extra: null) {
+  @if $extra {
+    box-shadow:
+      0 $depth 0 $edge,
+      $extra;
+  } @else {
+    box-shadow: 0 $depth 0 $edge;
+  }
+  &:active {
+    transform: translateY($depth - 1px);
+    @if $extra {
+      box-shadow:
+        0 1px 0 $edge,
+        $extra;
+    } @else {
+      box-shadow: 0 1px 0 $edge;
+    }
+  }
+}
+
+/// Gradient from the mode colours set inline as --a / --b.
+@mixin mode-gradient($angle: 140deg) {
+  background: linear-gradient($angle, var(--a, var(--mode-a)), var(--b, var(--mode-b)));
+}
+
+/// Gradient text.
+@mixin gradient-text($gradient) {
+  background: $gradient;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}

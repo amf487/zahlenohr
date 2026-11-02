@@ -1,0 +1,189 @@
+@use '../abstracts/mixins' as *;
+
+// HUD: round counter, progress and score
+.hud {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+
+  &__pill {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid var(--edge);
+    @include display(14px, 800);
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    white-space: nowrap;
+
+    b {
+      font-family: var(--f-mono);
+      font-style: normal;
+      font-size: 19px;
+      color: var(--ink);
+      letter-spacing: 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    &--score b {
+      color: var(--gold);
+    }
+  }
+
+  &__progress {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 6px;
+
+    i {
+      height: 10px;
+      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.12);
+
+      &.is-current {
+        background: #fff;
+        box-shadow: 0 0 12px rgba(255, 255, 255, 0.7);
+        animation: blink 1.2s ease-in-out infinite;
+      }
+
+      &.is-ok {
+        background: var(--ok);
+        box-shadow: 0 0 10px rgba(75, 227, 138, 0.6);
+      }
+
+      &.is-bad {
+        background: var(--bad);
+        box-shadow: 0 0 10px rgba(255, 90, 110, 0.6);
+      }
+    }
+  }
+}
+
+.game {
+  @include wide {
+    padding: 18px 20px;
+  }
+
+  &__grid {
+    display: grid;
+    gap: 14px;
+
+    @include wide {
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+      gap: 22px;
+    }
+  }
+
+  &__side {
+    border-top: 1px solid var(--edge);
+    padding-top: 14px;
+
+    @include wide {
+      border-top: 0;
+      padding-top: 0;
+      border-left: 1px solid var(--edge);
+      padding-left: 22px;
+    }
+  }
+
+  // timer + play buttons
+  &__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px;
+  }
+
+  &__controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+
+    @include wide {
+      margin-left: auto;
+    }
+  }
+
+  &__footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+// Shown on the right while listening.
+.waiting {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  text-align: center;
+  gap: 12px;
+  color: var(--muted);
+
+  @include wide {
+    min-height: 240px;
+  }
+
+  &__badge {
+    width: 96px;
+    height: 96px;
+    border-radius: 28px;
+    display: grid;
+    place-items: center;
+    @include mode-gradient;
+    color: #fff;
+    box-shadow:
+      0 6px 0 rgba(0, 0, 0, 0.4),
+      0 0 40px color-mix(in srgb, var(--a, var(--mode-a)) 55%, transparent);
+    transform: rotate(-6deg);
+    animation: bob 2.4s ease-in-out infinite;
+
+    svg.i {
+      width: 50px;
+      height: 50px;
+      stroke-width: 1.8;
+    }
+
+    @include narrow {
+      display: none;
+    }
+  }
+
+  p {
+    margin: 0;
+    max-width: 34ch;
+    font-size: 15px;
+  }
+
+  strong {
+    color: var(--ink);
+    @include display(24px);
+  }
+}
+
+.keys {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+
+  kbd {
+    font-family: var(--f-mono);
+    font-size: 12px;
+    border: 1px solid var(--edge);
+    border-bottom-width: 3px;
+    border-radius: 5px;
+    padding: 0 5px;
+    background: var(--panel);
+  }
+
+  @media (hover: none) {
+    display: none;
+  }
+}
