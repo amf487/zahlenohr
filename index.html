@@ -106,6 +106,36 @@ body.nozh .zh { display: none !important; }
 .brand .zh { font-size: 14px; }
 .icon-btn { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 12px; background: var(--panel-2); border: 1px solid var(--edge); box-shadow: 0 4px 0 var(--sink); font-weight: 500; font-size: 15px; }
 .icon-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--sink); }
+.icon-btn { padding: 9px; }
+.icon-btn svg.i { width: 20px; height: 20px; }
+
+/* tooltips */
+.tip { position: relative; --tx: -50%; }
+.tip::after {
+  content: attr(data-tip); position: absolute; left: 50%; bottom: calc(100% + 10px); z-index: 30;
+  width: max-content; max-width: 240px; padding: 8px 12px; border-radius: 10px;
+  background: #FFFFFF; color: #1A1040; box-shadow: 0 10px 24px rgba(0,0,0,.45);
+  font: 500 13px/1.35 var(--f-body); font-style: normal; text-transform: none; letter-spacing: 0; white-space: normal; text-align: left;
+  opacity: 0; pointer-events: none; transform: translate(var(--tx), 4px); transition: opacity .15s, transform .15s;
+}
+.tip:hover::after, .tip:focus-visible::after, .seg .tip:focus::after { opacity: 1; transform: translate(var(--tx), 0); }
+.seg .tip:first-child { --tx: 0; } .seg .tip:first-child::after { left: 0; }
+.seg .tip:last-child { --tx: 0; } .seg .tip:last-child::after { left: auto; right: 0; }
+.tip-below { --tx: 0; } .tip-below::after { left: auto; right: 0; bottom: auto; top: calc(100% + 10px); }
+
+/* rules modal */
+.linkbtn { justify-self: center; display: inline-flex; align-items: center; gap: 8px; border: 0; background: none; padding: 2px 6px; color: var(--muted); font-size: 14px; font-weight: 500; text-decoration: underline; text-underline-offset: 3px; }
+.linkbtn:hover { color: var(--ink); }
+.linkbtn .ico { width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; background: var(--panel-2); font-family: var(--f-mono); font-weight: 800; font-size: 11px; text-decoration: none; }
+.modal { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 16px; background: rgba(5, 3, 20, .72); backdrop-filter: blur(4px); }
+.modal-card { width: min(460px, 100%); background: linear-gradient(180deg, #2A1C66, #1A1045); animation: modalin .22s cubic-bezier(.2,.9,.3,1.2) both; }
+.modal-card .primary { justify-self: start; }
+@keyframes modalin { from { opacity: 0; transform: translateY(12px) scale(.96); } }
+
+.previewrow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.previewrow .ghost { padding: 8px 14px; }
+.warnline { margin: 0; padding: 7px 12px; border-radius: 10px; background: rgba(255,201,60,.14); border: 1px solid rgba(255,201,60,.5); color: var(--ink); font-size: 14px; display: grid; gap: 2px; }
+.warnline .zh { color: var(--ink); opacity: .8; }
 
 .card {
   background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.035));
@@ -211,6 +241,13 @@ body.nozh .zh { display: none !important; }
 .tile { position: relative; width: calc(var(--fs) * .76); height: calc(var(--fs) * 1.28); display: grid; place-items: center; background: linear-gradient(180deg, #1E1950, var(--tile)); color: var(--tile-fg); font-family: var(--f-mono); font-weight: 800; font-size: var(--fs); border-radius: 5px; text-shadow: 0 0 14px rgba(255,216,102,.55); }
 .tile::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: var(--tile-line); }
 .tile.dim { color: var(--tile-dim); text-shadow: none; }
+/* after answering: which digits were heard right */
+.tile.hit { color: var(--ok); text-shadow: 0 0 14px rgba(75,227,138,.65); box-shadow: inset 0 -3px 0 var(--ok); }
+.tile.miss { background: linear-gradient(180deg, #5C1428, #36091A); color: #FF8C9A; text-shadow: 0 0 12px rgba(255,90,110,.6); box-shadow: inset 0 -3px 0 var(--bad); }
+.tile.near { background: linear-gradient(180deg, #4A360A, #2E2006); color: var(--gold); box-shadow: inset 0 -3px 0 var(--gold-2); }
+.tile[data-was]::before { content: attr(data-was); position: absolute; top: 2px; right: 3px; z-index: 1; font-size: calc(var(--fs) * .34); line-height: 1; color: #FFFFFF; opacity: .85; text-decoration: line-through; text-shadow: none; }
+.board-legend { display: flex; gap: 10px; text-transform: none; letter-spacing: .02em; }
+.board-legend i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 4px; font-style: normal; }
 .tile.sym { background: transparent; width: calc(var(--fs) * .5); }
 .tile.sym::after, .tile.gap::after { display: none; }
 .tile.gap { background: transparent; width: calc(var(--fs) * .3); }
@@ -281,16 +318,16 @@ body.nozh .zh { display: none !important; }
 .verdict.bad { color: var(--bad); text-shadow: 0 0 18px rgba(255,90,110,.35); }
 .verdict .zh { margin-left: 6px; }
 .verdict .ans { font-family: var(--f-mono); font-style: normal; text-transform: none; }
-.transcript { margin: 0; font-size: 17px; line-height: 1.4; }
+.transcript { margin: 0; font-size: 16px; line-height: 1.38; }
 .transcript mark { background: var(--mark); color: var(--ink); padding: 0 4px; border-radius: 5px; }
 .label { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; letter-spacing: .12em; font-size: 11px; color: var(--muted); display: block; margin-bottom: 3px; }
 .parts { display: flex; flex-wrap: wrap; gap: 6px; }
-.part { display: inline-flex; align-items: baseline; gap: 8px; padding: 3px 10px; border-radius: 10px; background: var(--panel-2); border: 1px solid var(--edge); max-width: 100%; font-size: 15px; }
+.part { display: inline-flex; align-items: baseline; gap: 8px; padding: 2px 9px; border-radius: 10px; background: var(--panel-2); border: 1px solid var(--edge); max-width: 100%; font-size: 15px; }
 .part .w { font-style: italic; overflow-wrap: anywhere; }
 .part .d { font-family: var(--f-mono); font-weight: 800; color: var(--gold); white-space: nowrap; }
-.hints { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 15px; }
+.hints { margin: 0; padding: 0; list-style: none; display: grid; gap: 5px; font-size: 14px; line-height: 1.35; }
 .hints li { padding: 4px 10px; border-radius: 10px; background: rgba(255,201,60,.08); border-left: 3px solid var(--gold); display: grid; gap: 1px; }
-.hints .zh { font-size: 14px; color: var(--ink); opacity: .8; }
+.hints .zh { font-size: 13px; color: var(--ink); opacity: .8; }
 
 .gamefoot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; }
 .quit { border: 0; background: none; color: var(--muted); font-size: 14px; text-decoration: underline; text-underline-offset: 3px; padding: 4px; }
@@ -396,9 +433,8 @@ select { width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid
 <div class="app">
   <header class="top">
     <button class="brand" id="home" type="button"><span class="logo">12</span>Zahlenohr <span class="zh">德语数字听力</span></button>
-    <button class="icon-btn" id="openSettings" type="button">
+    <button class="icon-btn tip tip-below" id="openSettings" type="button" aria-label="Einstellungen" data-tip="Einstellungen">
       <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>
-      <span class="lbl">Einstellungen</span>
     </button>
   </header>
 
@@ -416,12 +452,12 @@ select { width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid
       <div class="field">
         <span class="flabel">Schwierigkeit <span class="zh">难度</span></span>
         <div class="seg big" id="diffSeg"></div>
-        <p class="note" id="diffNote"></p>
       </div>
       <button class="start btn3d" id="startBtn" type="button">
         <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 1.5v13l11-6.5z"/></svg>
         Spiel starten <span class="zh">开始</span>
       </button>
+      <button class="linkbtn" id="rulesBtn" type="button"><span class="ico">i</span> So zählt es <span class="zh">计分规则</span></button>
     </div>
     <div class="col">
       <div class="card">
@@ -429,17 +465,21 @@ select { width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid
         <ol class="hs" id="hsList"></ol>
         <p class="empty" id="hsEmpty">Noch keine Runde in dieser Kombination. Dein erstes Ergebnis landet hier. <span class="zh">还没有成绩。</span></p>
       </div>
-      <div class="card">
-        <h2>So zählt es <span class="zh">计分规则</span></h2>
+    </div>
+  </section>
+  <div class="modal" id="rulesModal" hidden role="dialog" aria-modal="true" aria-labelledby="rulesTitle">
+      <div class="card modal-card">
+        <h2 id="rulesTitle">So zählt es <span class="zh">计分规则</span></h2>
         <div class="rules">
           <span><span class="ico">⏱</span><span>Die Uhr läuft, sobald der Satz zu Ende ist.</span></span>
           <span><span class="ico">✓</span><span>Richtig: <b>1000</b> Punkte minus 1 Punkt pro <b id="ruleMs">20</b> ms, mindestens <b>100</b>.</span></span>
           <span><span class="ico">✗</span><span>Falsch: <b>0</b> Punkte. Maximal <b>10.000</b> pro Runde.</span></span>
+          <span><span class="ico">⌨</span><span>Leerzeichen und „-" beim Tippen sind egal. Bei Uhrzeiten zählt auch die 12-Stunden-Form, du bekommst dann aber einen Hinweis.</span></span>
           <span class="zh">句子读完后开始计时，每过一毫秒都会扣分。答错 0 分。</span>
         </div>
+        <button class="primary btn3d" id="rulesClose" type="button">Alles klar <span class="zh">明白了</span></button>
       </div>
-    </div>
-  </section>
+  </div>
 
   <!-- GAME -->
   <section class="screen" id="screenGame" hidden>
@@ -488,6 +528,7 @@ select { width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid
           </div>
           <section class="feedback" id="feedback" hidden aria-live="polite">
             <p class="verdict" id="verdict"></p>
+            <p class="warnline" id="warnLine" hidden></p>
             <div>
               <span class="label">Gesagt wurde <span class="zh">原句</span></span>
               <p class="transcript" id="transcript"></p>
@@ -543,6 +584,10 @@ select { width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid
       <div class="field">
         <label class="flabel" for="voice">Stimme <span class="zh">声音</span></label>
         <select id="voice"></select>
+        <div class="previewrow">
+          <button class="ghost btn3d" id="preview" type="button"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg> Probe hören <span class="zh">试听</span></button>
+          <span class="note" id="previewInfo"></span>
+        </div>
         <p class="note" id="voiceStatus">Stimmen werden geladen …</p>
       </div>
       <div class="field">
@@ -647,58 +692,159 @@ function buildOptions(answer, traps, filler) {
 }
 
 /* ---------- context sentences ---------- */
+const regional = (common, at, de) => ({ AT: common.concat(at), DE: common.concat(de) });
 const TPL = {
-  timeC: {
-    AT: ['Treffen wir uns um {x}?', 'Geht sich {x} für dich aus?', 'Ich hol dich um {x} ab.', 'Die Ordination sperrt um {x} auf.', 'Es ist schon {x}.', 'Passt dir {x}?'],
-    DE: ['Treffen wir uns um {x}?', 'Passt dir {x}?', 'Ich hol dich um {x} ab.', 'Die Praxis macht um {x} auf.', 'Es ist schon {x}.', 'Wir sehen uns dann um {x}.']
-  },
-  timeF: {
-    AT: ['Der Zug nach Wien fährt um {x} ab.', 'Ihr Termin ist am Dienstag um {x}.', 'Der Flug landet planmäßig um {x}.', 'Die Vorstellung beginnt um {x}.'],
-    DE: ['Der Zug nach Hamburg fährt um {x} ab.', 'Ihr Termin ist am Dienstag um {x}.', 'Der Flug landet planmäßig um {x}.', 'Die Vorstellung beginnt um {x}.']
-  },
-  phone: {
-    AT: ['Meine Handynummer is {x}.', 'Sie erreichen mich unter {x}.', 'Servus, ruf mich bitte zurück unter {x}.', 'Schreib dir die Nummer auf: {x}.'],
-    DE: ['Meine Handynummer ist {x}.', 'Sie erreichen mich unter {x}.', 'Hallo, ruf mich bitte zurück unter {x}.', 'Schreib dir die Nummer auf: {x}.']
-  },
-  price: {
-    AT: ['Des macht dann {x}, bitte.', 'Das kostet {x}.', 'Zusammen {x}.', 'Die Melange kostet {x}.'],
-    DE: ['Das macht dann {x}, bitte.', 'Das kostet {x}.', 'Zusammen {x}.', 'Der Kaffee kostet {x}.']
-  },
-  date: {
-    AT: ['Der Termin ist am {x}.', 'Ich hab am {x} Geburtstag.', 'Wir fliegen am {x}.', 'Die Prüfung ist am {x}.'],
-    DE: ['Der Termin ist am {x}.', 'Ich habe am {x} Geburtstag.', 'Wir fliegen am {x}.', 'Die Prüfung ist am {x}.']
-  },
-  num: ['Ihre Wartenummer ist {x}.', 'Die richtige Antwort ist {x}.', 'Ihr Zimmer hat die Nummer {x}.'],
-  numNoun: ['Das sind ungefähr {x} Kilometer.', 'Zum Konzert kamen {x} Leute.'],
-  big: ['Die Stadt hat {x} Einwohner.', 'Das Auto hat {x} Kilometer drauf.'],
-  year: ['Ich bin {x} geboren.', 'Das Haus wurde {x} gebaut.', 'Das war im Jahr {x}.']
+  // colloquial times: {x} is e.g. "halb acht am Abend", without "um"
+  timeC: regional([
+    'Treffen wir uns um {x}?', 'Passt dir {x}?', 'Ich hol dich um {x} ab.', 'Es ist schon {x}.',
+    'Wir sehen uns dann um {x}.', 'Der Film fängt um {x} an.', 'Ich bin ungefähr um {x} zu Hause.',
+    'Kannst du mich um {x} anrufen?', 'Das Meeting ist um {x}.', 'Mein Bus fährt um {x}.',
+    'Wir essen heute um {x}.', 'Der Laden macht um {x} zu.', 'Ich hab den Wecker auf {x} gestellt.',
+    'Komm bitte nicht später als {x}.', 'Um {x} geht es los.', 'Spätestens um {x} muss ich weg.',
+    'Sagen wir {x}?', 'Der Kurs beginnt um {x}.', 'Die Party fängt so um {x} an.',
+    'Ich hab um {x} einen Termin beim Arzt.', 'Das Training ist heute erst um {x}.',
+    'Kannst du die Kinder um {x} abholen?', 'Ich ruf dich um {x} zurück.', 'Wir müssen um {x} am Bahnhof sein.',
+    'Die Pizza kommt so um {x}.', 'Mama hat gesagt, um {x} gibt es Essen.'
+  ], [
+    'Geht sich {x} für dich aus?', 'Die Ordination sperrt um {x} auf.', 'Gemma um {x} auf einen Kaffee?',
+    'Die Bim kommt um {x}.', 'Der Heurige sperrt um {x} auf.', 'Die Trafik sperrt um {x} zu.',
+    'Servus, kannst du um {x}?', 'Treff ma uns um {x} beim Würstelstand?', 'Die Jause gibt es um {x}.',
+    'Um {x} bin ich beim Billa.'
+  ], [
+    'Die Praxis macht um {x} auf.', 'Die Bahn kommt um {x}.', 'Lass uns um {x} beim Bäcker treffen.',
+    'Moin, passt dir {x}?', 'Der Kiosk macht um {x} zu.', 'Ich bin um {x} im Büro.',
+    'Das Abendbrot gibt es um {x}.', 'Um {x} bin ich beim Edeka.'
+  ]),
+  // official times: {x} is e.g. "siebzehn Uhr dreißig"
+  timeF: regional([
+    'Ihr Termin ist am Dienstag um {x}.', 'Der Flug landet planmäßig um {x}.', 'Die Vorstellung beginnt um {x}.',
+    'Es ist jetzt {x}.', 'Beim nächsten Ton ist es {x}.', 'Die Sprechstunde endet um {x}.',
+    'Das Geschäft ist bis {x} geöffnet.', 'Ihr Paket wird bis {x} zugestellt.', 'Die Besprechung wurde auf {x} verschoben.',
+    'Abfahrt ist um {x}.', 'Der Check-in schließt um {x}.', 'Bitte seien Sie spätestens um {x} da.',
+    'Die Bibliothek schließt heute um {x}.', 'Das Boarding beginnt um {x}.', 'Ihr Tisch ist für {x} reserviert.',
+    'Die Prüfung beginnt pünktlich um {x}.',
+    'Die Durchsage für den Flug nach Berlin kommt um {x}.'
+  ], [
+    'Der Zug nach Wien fährt um {x} ab.', 'Der Railjet nach Salzburg kommt heute erst um {x}.',
+    'Die Ordination ist heute bis {x} geöffnet.', 'Ihr Termin am Magistrat ist um {x}.', 'Die U-Bahn fährt heute bis {x}.'
+  ], [
+    'Der Zug nach Hamburg fährt um {x} ab.', 'Der ICE nach München kommt heute erst um {x}.',
+    'Ihr Termin beim Bürgeramt ist um {x}.', 'Die S-Bahn fährt heute bis {x}.', 'Die Praxis ist heute bis {x} geöffnet.'
+  ]),
+  phone: regional([
+    'Sie erreichen mich unter {x}.', 'Schreib dir die Nummer auf: {x}.', 'Meine Nummer ist {x}.',
+    'Rufen Sie bitte unter {x} zurück.', 'Die Nummer lautet {x}.', 'Ich wiederhole: {x}.',
+    'Unter {x} bin ich den ganzen Tag erreichbar.', 'Haben Sie was zum Schreiben? {x}.',
+    'Wenn was ist, ruf einfach {x} an.', 'Für Rückfragen: {x}.', 'Die Hotline erreichen Sie unter {x}.',
+    'Bitte melden Sie sich unter {x}.', 'Neue Nummer, bitte speichern: {x}.', 'Die Nummer von meinem Kollegen ist {x}.',
+    'Bei Fragen wählen Sie bitte {x}.', 'Für Notfälle gilt die Nummer {x}.', 'Die Zentrale hat die Nummer {x}.'
+  ], [
+    'Meine Handynummer is {x}.', 'Servus, ruf mich bitte zurück unter {x}.', 'Grüß Gott, Sie erreichen uns unter {x}.',
+    'Schreib da die Nummer auf: {x}.', 'Ruf mich halt an, {x}.'
+  ], [
+    'Meine Handynummer ist {x}.', 'Hallo, ruf mich bitte zurück unter {x}.', 'Guten Tag, Sie erreichen uns unter {x}.',
+    'Moin, meine Nummer ist {x}.', 'Ruf mich einfach an, {x}.'
+  ]),
+  phoneCity: ['Die Nummer vom Büro in {city} ist {x}.', 'Unser Standort in {city} hat die Nummer {x}.', 'Die Filiale in {city} erreichen Sie unter {x}.'],
+  // prices are always accusative-safe ("einen Euro")
+  price: regional([
+    'Das kostet {x}.', 'Das macht {x}, bitte.', 'Der Eintritt kostet {x}.', 'Im Angebot nur {x}.',
+    'Das Ticket kostet {x}.', 'Macht {x}. Zahlen Sie bar oder mit Karte?', 'Die Rechnung beträgt {x}.',
+    'Heute nur {x}!', 'Pro Person kostet das {x}.', 'Das Porto kostet {x}.', 'Für dich nur {x}.',
+    'Zusammen macht das {x}.', 'Der Haarschnitt kostet {x}.', 'Die Fahrt kostet {x}.', 'Ich bekomme noch {x} von dir.',
+    'Der Parkplatz kostet {x} pro Stunde.', 'Mit Rabatt zahlen Sie nur {x}.'
+  ], [
+    'Des macht dann {x}, bitte.', 'Die Melange kostet {x}.', 'Ein Krügerl kostet hier {x}.', 'Die Semmel kostet {x}.',
+    'Das Schnitzel kostet {x}.', 'Zahlen, bitte! Des macht {x}.', 'Die Leberkässemmel kostet {x}.'
+  ], [
+    'Das macht dann {x}, bitte.', 'Der Kaffee kostet {x}.', 'Ein Brötchen kostet {x}.', 'Die Currywurst kostet {x}.',
+    'Ein Bier kostet hier {x}.', 'Die Brezel kostet {x}.'
+  ]),
+  // dates: {x} is e.g. "dritten Mai"; every template keeps the dative ending (-ten)
+  date: regional([
+    'Der Termin ist am {x}.', 'Wir fliegen am {x}.', 'Die Prüfung ist am {x}.', 'Ich ziehe am {x} um.',
+    'Die Rechnung ist bis zum {x} zu bezahlen.', 'Das Fest findet am {x} statt.', 'Mein Urlaub beginnt am {x}.',
+    'Der Kurs startet am {x}.', 'Die Wohnung ist ab dem {x} frei.', 'Bitte melden Sie sich bis zum {x} an.',
+    'Wir haben am {x} unseren Jahrestag.', 'Das Paket kommt voraussichtlich am {x}.', 'Seit dem {x} wohne ich hier.',
+    'Die Frist endet am {x}.', 'Der Vertrag läuft bis zum {x}.', 'Am {x} fängt mein neuer Job an.',
+    'Das Konzert ist am {x}.', 'Die Hochzeit ist am {x}.'
+  ], [
+    'Ich hab am {x} Geburtstag.', 'Der Termin auf der Gemeinde ist am {x}.', 'Am {x} gemma zum Heurigen.'
+  ], [
+    'Ich habe am {x} Geburtstag.', 'Der Termin beim Amt ist am {x}.', 'Am {x} gehen wir in den Biergarten.'
+  ]),
+  num: ['Ihre Wartenummer ist {x}.', 'Die richtige Antwort ist {x}.', 'Ihr Zimmer hat die Nummer {x}.', 'Das Ergebnis ist {x}.',
+    'Die Zahl lautet {x}.', 'Notier dir bitte: {x}.', 'Unsere Kundennummer ist {x}.', 'Der Code ist {x}.', 'Insgesamt sind es {x}.'],
+  numNoun: ['Das sind ungefähr {x} Kilometer.', 'Zum Konzert kamen {x} Leute.', 'Wir haben {x} Stück bestellt.',
+    'Das Buch hat {x} Seiten.', 'Die Strecke ist {x} Meter lang.', 'Im Saal ist Platz für {x} Personen.',
+    'Heute haben {x} Leute angerufen.', 'Das Paket wiegt {x} Gramm.', 'Es haben schon {x} Menschen unterschrieben.'],
+  big: ['Die Stadt hat {x} Einwohner.', 'Das Auto hat {x} Kilometer drauf.', 'Das Haus kostet {x} Euro.',
+    'Das Video hat {x} Aufrufe.', 'Im Stadion waren {x} Zuschauer.', 'Die Firma hat letztes Jahr {x} Euro Umsatz gemacht.',
+    'Der Kredit beträgt {x} Euro.', 'Die Wohnung kostet {x} Euro.'],
+  year: ['Ich bin {x} geboren.', 'Das Haus wurde {x} gebaut.', 'Das war im Jahr {x}.', 'Wir haben {x} geheiratet.',
+    'Die Firma wurde {x} gegründet.', 'Ich bin {x} hierher gezogen.', 'Seit {x} wohne ich in dieser Stadt.',
+    'Das Album ist {x} erschienen.', 'Ich habe {x} mit dem Studium angefangen.', 'Das Auto ist Baujahr {x}.']
 };
+const OPENERS = { AT: ['Also. ', 'Okay. ', 'Moment. ', 'Na gut. ', 'Passt. ', 'Gut. ', 'So. '], DE: ['Also. ', 'Okay. ', 'Moment. ', 'Na gut. ', 'Alles klar. ', 'Gut. ', 'So. '] };
+const recentTpl = [];
+function pickTpl(list) {
+  let t, g = 0;
+  do { t = pick(list); } while (recentTpl.includes(t) && g++ < 30);
+  recentTpl.push(t); if (recentTpl.length > 8) recentTpl.shift();
+  return t;
+}
 
 /* ---------- parsers ---------- */
+// Spaces and "-" inside typed numbers are ignored.
 function parseTime(s) {
   s = String(s).trim();
-  const m = s.match(/^(\d{1,2})\s*[:.,h ]\s*(\d{1,2})/);
+  const m = s.match(/^(\d{1,2})\s*[:.,h]\s*(\d{1,2})/);
   if (m) return [+m[1], +m[2]];
-  const d = s.replace(/\D/g, '');
+  const d = s.replace(/[\s-]/g, '').replace(/\D/g, '');
   if (d.length === 3 || d.length === 4) return [+d.slice(0, -2), +d.slice(-2)];
   if (d.length >= 1 && d.length <= 2) return [+d, 0];
   return null;
 }
+// "+" and "00" are treated the same; +43 0664 and 0043 664 both become 0664.
 function normPhone(s) {
   s = String(s).trim();
   let d = s.replace(/\D/g, '');
   if (s.startsWith('+')) d = '00' + d;
-  if (/^00(43|49)/.test(d)) d = '0' + d.slice(4);
+  if (/^00(43|49)/.test(d)) d = '0' + d.slice(4).replace(/^0+/, '');
   return d;
 }
 function parsePrice(s) {
-  s = String(s).replace(/€|euro?/gi, '').replace(/\s/g, '').replace(/,-+$/, '');
+  s = String(s).replace(/€|euro?/gi, '').replace(/\s/g, '').replace(/,-+$/, '').replace(/-/g, '');
   if (/^\d+([.,]\d{1,2})?$/.test(s)) return Math.round(parseFloat(s.replace(',', '.')) * 100);
   return null;
 }
+const MONTH_KEYS = [['jan', 'jän', 'jaen'], ['feb'], ['mär', 'mar', 'maer'], ['apr'], ['mai', 'may'], ['jun'], ['jul'], ['aug'], ['sep'], ['okt', 'oct'], ['nov'], ['dez', 'dec']];
+function monthFromWord(w) {
+  w = w.toLowerCase();
+  for (let i = 0; i < 12; i++) if (MONTH_KEYS[i].some(k => w.startsWith(k))) return i + 1;
+  return 0;
+}
+// Accepts 23.3., 23/3, 23 3, 23. März, 23 Jänner and 3月23日.
 function parseDate(s) {
-  const m = String(s).match(/(\d{1,2})\s*[.\/-]\s*(\d{1,2})/);
+  s = String(s).trim();
+  let m = s.match(/(\d{1,2})\s*月\s*(\d{1,2})/);
+  if (m) return [+m[2], +m[1]];
+  m = s.match(/(\d{1,2})\s*\.?\s*([A-Za-zÄÖÜäöü]{3,})/);
+  if (m) { const mo = monthFromWord(m[2]); return mo ? [+m[1], mo] : null; }
+  m = s.match(/(\d{1,2})\s*[.\/\-\s]\s*(\d{1,2})/);
   return m ? [+m[1], +m[2]] : null;
+}
+function timeCheck(s, h24, m, exact, why) {
+  const p = parseTime(s);
+  if (!p || p[1] !== m) return false;
+  const h = p[0] === 24 ? 0 : p[0];
+  if (!exact) return h % 12 === h24 % 12;
+  if (h === h24) return true;
+  if (h % 12 === h24 % 12) {
+    const t = fmt24(h24 * 60 + m);
+    return { ok: true, warn: { de: `Fast: gemeint war ${t}. ${why.de}`, zh: `注意：正确答案是 ${t}。${why.zh}` } };
+  }
+  return false;
 }
 
 /* ---------- generators ---------- */
@@ -736,7 +882,8 @@ function genTime(region) {
     return {
       core, tpl: TPL.timeF[region], answer,
       options: buildOptions(answer, traps, () => fmt24(t + pick([-1, 1]) * pick([1, 2, 5, 10, 12, 20, 60, 120]))),
-      check: s => { const p = parseTime(s); return !!p && p[1] === m && (p[0] === h || (h === 0 && p[0] === 24)); },
+      exact: true,
+      check: s => timeCheck(s, h, m, true, { de: 'Offizielle Uhrzeiten werden im 24-Stunden-Format gesagt.', zh: '正式时间用24小时制。' }),
       hints, parts: [], kind: 'offiziell (24 h)', ph: 'z. B. 17:30', im: 'decimal'
     };
   }
@@ -800,7 +947,8 @@ function genTime(region) {
   return {
     core, tpl: TPL.timeC[region], answer,
     options: buildOptions(answer, traps, () => F(t + pick([-1, 1]) * pick([5, 10, 15, 30, 60, 90]))),
-    check: s => { const q = parseTime(s); if (!q || q[1] !== mm) return false; return exact ? q[0] === h24 : q[0] % 12 === h24 % 12; },
+    exact,
+    check: s => timeCheck(s, h24, mm, exact, dp ? { de: `„${dp[0]}" heißt ${dp[1]}.`, zh: `${dp[0]} = ${dp[1]}。` } : { de: '', zh: '' }),
     hints, parts: [], kind: 'umgangssprachlich' + (dp ? ' mit Tageszeit' : ''), ph: exact ? 'z. B. 19:30' : 'z. B. 7:15', im: 'decimal'
   };
 }
@@ -912,7 +1060,7 @@ function genPhone(region) {
   if (intl) hints.push({ de: `+${cc} ist die Vorwahl für ${region === 'AT' ? 'Österreich' : 'Deutschland'}. Danach fällt die erste Null weg.`, zh: `+${cc} 是${region === 'AT' ? '奥地利' : '德国'}的国家代码，后面的区号去掉开头的 0。` });
 
   let tpl = TPL.phone[region];
-  if (city) tpl = tpl.concat([`Die Nummer vom Büro in ${city} ist {x}.`]);
+  if (city) tpl = tpl.concat(TPL.phoneCity.map(t => t.replace('{city}', city)));
   return {
     core, tpl, answer,
     options: buildOptions(answer, traps, mutate),
@@ -928,7 +1076,7 @@ function genNumber(region) {
   else if (r < .4) { n = chance(.5) ? ri(13, 19) : ri(3, 9) * 10; kind = 'teen'; }
   else if (r < .65) { n = ri(100, 9999); kind = 'mittel'; }
   else if (r < .85) { n = ri(10, 999) * 1000 + (chance(.6) ? ri(0, 999) : 0); kind = 'gross'; }
-  else { n = ri(1950, 2029); kind = 'jahr'; }
+  else { n = ri(1950, 2025); kind = 'jahr'; }
   const words = kind === 'jahr' ? yearWords(n) : numWords(n);
   const D = v => kind === 'jahr' ? String(v) : fmtNum(v);
   const small = kind === 'zwei' || kind === 'teen';
@@ -976,7 +1124,7 @@ function genPrice(region) {
   if (c > 0 && c < 10) c += 10;
   const cents = e * 100 + c;
   const eNum = e ? numWords(e) : '';
-  const eW = e === 1 ? 'ein' : eNum;
+  const eW = e === 1 ? 'einen' : eNum;
   const cW = c ? numWords(c) : '';
   let core, euroSaid = true;
   if (c === 0) core = `${eW} Euro`;
@@ -1057,7 +1205,7 @@ function genDate(region) {
     options: buildOptions(answer, T, () => D(chance(.5) ? ri(1, 28) : d, chance(.5) ? ri(1, 12) : mo)),
     check: s => { const p = parseDate(s); return !!p && p[0] === d && p[1] === mo; },
     hints, parts: [{ w: dW, d: d + '.' }, { w: mW, d: mo + '.' + (byName ? ' (' + MONTH_ZH[mo - 1] + ')' : '') }],
-    kind: byName ? 'Datum mit Monatsnamen' : 'Datum mit Monatszahl', ph: 'z. B. 23.3.', im: 'decimal'
+    kind: byName ? 'Datum mit Monatsnamen' : 'Datum mit Monatszahl', ph: 'z. B. 23.3. oder 23. März', im: 'text'
   };
 }
 
@@ -1265,9 +1413,7 @@ function renderStart() {
       ${icon(m[0], 'art')}
       <span class="t">${m[1]} <span class="zh">${m[2]}</span></span>
     </button>`).join('');
-  $('#diffSeg').innerHTML = Object.entries(DIFF).map(([k, d]) => `<button type="button" data-v="${k}" aria-pressed="${settings.diff === k}">${d.de} <span class="zh">${d.zh}</span></button>`).join('');
-  const d = DIFF[settings.diff];
-  $('#diffNote').innerHTML = `${esc(d.note)} <span class="zh">${esc(d.noteZh)}</span>`;
+  $('#diffSeg').innerHTML = Object.entries(DIFF).map(([k, d]) => `<button type="button" class="tip" data-tip="${esc(d.note + (settings.zh ? ' ' + d.noteZh : ''))}" data-v="${k}" aria-pressed="${settings.diff === k}">${d.de} <span class="zh">${d.zh}</span></button>`).join('');
   $('#ruleMs').textContent = settings.diff === 'hard' ? '20 (eingetippt: 30)' : '20';
   renderHs();
 }
@@ -1288,17 +1434,55 @@ function renderSettings() {
 }
 
 /* ---------- board ---------- */
-function renderBoard(str, reveal) {
+function renderBoard(str, reveal, marks) {
   const el = $('#tiles');
   const chars = [...str];
   el.style.setProperty('--n', Math.max(chars.length, 5));
-  let i = 0;
+  let i = 0, di = 0;
   el.innerHTML = chars.map(ch => {
     if (ch === ' ') return '<span class="tile gap"></span>';
     const isDigit = /\d/.test(ch);
-    const cls = 'tile' + (isDigit ? '' : ' sym') + (reveal ? ' rev' : '') + (!reveal && ch === '-' ? ' dim' : '');
-    return `<span class="${cls}" style="--i:${i++}">${esc(reveal || !isDigit ? (ch === '-' && !reveal ? '·' : ch) : '·')}</span>`;
+    const mk = isDigit && marks ? marks[di++] : null;
+    const cls = 'tile' + (isDigit ? '' : ' sym') + (reveal ? ' rev' : '') + (!reveal && ch === '-' ? ' dim' : '') + (mk ? ' ' + mk.c : '');
+    const was = mk && mk.was != null ? ` data-was="${esc(mk.was)}"` : '';
+    return `<span class="${cls}"${was} style="--i:${i++}">${esc(reveal || !isDigit ? (ch === '-' && !reveal ? '·' : ch) : '·')}</span>`;
   }).join('');
+}
+
+/* Which digits of the answer did the player get right? Compared in the answer's own notation. */
+function userDigits(it) {
+  const q = it.q, u = it.user;
+  if (it.input === 'mc') return u.replace(/\D/g, '');
+  const ad = q.answer.replace(/\D/g, '');
+  switch (q.mode) {
+    case 'phone': { const n = normPhone(u); return q.answer.startsWith('+') ? ad.slice(0, 2) + n.replace(/^0/, '') : n; }
+    case 'time': {
+      const p = parseTime(u); if (!p) return null;
+      const h = q.exact ? (p[0] === 24 ? 0 : p[0]) : (p[0] % 12 || 12);
+      return `${h}${String(p[1]).padStart(2, '0')}`;
+    }
+    case 'price': { const c = parsePrice(u); return c == null ? null : fmtPrice(c).replace(/\D/g, ''); }
+    case 'date': { const p = parseDate(u); return p ? `${p[0]}${p[1]}` : null; }
+    default: return u.replace(/\D/g, '');
+  }
+}
+function digitMarks(it) {
+  const a = it.q.answer.replace(/\D/g, '');
+  if (it.ok && !it.warn) return [...a].map(() => ({ c: 'hit' }));
+  const u = userDigits(it);
+  const missC = it.warn ? 'near' : 'miss';
+  if (!u) return [...a].map(() => ({ c: 'miss' }));
+  if (u.length === a.length) return [...a].map((d, i) => d === u[i] ? { c: 'hit' } : { c: missC, was: u[i] });
+  // different length: longest common subsequence decides which digits were heard
+  const n = a.length, m = u.length, L = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) L[i][j] = a[i] === u[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+  const out = [...a].map(() => ({ c: missC }));
+  let i = 0, j = 0;
+  while (i < n && j < m) {
+    if (a[i] === u[j]) { out[i] = { c: 'hit' }; i++; j++; }
+    else if (L[i + 1][j] >= L[i][j + 1]) i++; else j++;
+  }
+  return out;
 }
 
 /* ---------- game ---------- */
@@ -1320,7 +1504,7 @@ function nextQuestion() {
   const region = settings.region === 'mix' ? (chance(.5) ? 'AT' : 'DE') : settings.region;
   const q = GEN[mode](region);
   q.mode = mode; q.region = region;
-  q.text = settings.context ? pick(q.tpl).replace('{x}', q.core) : (q.coreAlone || q.core);
+  q.text = settings.context ? (chance(.2) ? pick(OPENERS[region]) : '') + pickTpl(q.tpl).replace('{x}', q.core) : (q.coreAlone || q.core);
   const v = chooseVoice(region);
   q.voiceURI = v ? v.voiceURI : null;
   q.rate = settings.rate * diff.rate * (1 + (R() - .5) * .08);
@@ -1402,7 +1586,9 @@ function submit(val) {
   cancelAnimationFrame(rafId);
   it.ms = it.tStart ? now - it.tStart : 0;
   it.user = String(val).trim();
-  it.ok = it.input === 'mc' ? val === q.answer : q.check(val);
+  const r = it.input === 'mc' ? val === q.answer : q.check(val);
+  it.ok = r === true || !!(r && r.ok);
+  it.warn = (r && r.warn) || null;
   it.pts = it.ok ? pointsFor(it.ms, it.input === 'text') : 0;
   const before = round.score;
   round.score += it.pts;
@@ -1426,13 +1612,17 @@ function submit(val) {
   } else {
     $('#txt').disabled = true; $('#txtBtn').disabled = true; $('#txt').classList.add(it.ok ? 'ok' : 'bad');
   }
-  renderBoard(q.answer, true);
+  renderBoard(q.answer, true, digitMarks(it));
+  $('#boardRegion').innerHTML = '<span class="board-legend"><span><i style="background:var(--ok)"></i>richtig</span><span><i style="background:var(--bad)"></i>falsch</span></span>';
 
   const vd = $('#verdict');
   vd.className = 'verdict ' + (it.ok ? 'ok' : 'bad');
   vd.innerHTML = it.ok
     ? `Richtig! +${fmtPts(it.pts)} <span class="zh">答对了</span>`
     : `Falsch! <span class="zh">答错了</span>`;
+  const wl = $('#warnLine');
+  wl.hidden = !it.warn;
+  wl.innerHTML = it.warn ? `<span>⚠ ${esc(it.warn.de)}</span><span class="zh">${esc(it.warn.zh)}</span>` : '';
   $('#transcript').innerHTML = transcriptHtml(q);
   // Explanations only after a mistake, to keep the round quick.
   $('#parts').innerHTML = it.ok ? '' : partsHtml(q);
@@ -1491,7 +1681,7 @@ function finishRound() {
       <div class="row">
         <span class="n">${i + 1}</span>
         <span class="a" title="${esc(q.answer)}">${esc(q.answer)}${it.ok ? '' : `<span class="you">du: ${esc(it.user || '–')}</span>`}<span class="pbar"><i style="width:${it.pts / MAX_PTS * 100}%"></i></span></span>
-        <span class="m">${MODE[q.mode].de}${it.input === 'text' ? ' · getippt' : ''} · ${secTxt(it.ms)}</span>
+        <span class="m">${MODE[q.mode].de}${it.input === 'text' ? ' · getippt' : ''}${it.warn ? ' · ⚠ 12 h' : ''} · ${secTxt(it.ms)}</span>
         <span class="actions">
           <button type="button" class="say" data-i="${i}" aria-label="Noch einmal anhören">${SPEAKER}</button>
           <button type="button" class="more" data-i="${i}" aria-expanded="false" aria-label="Erklärung"><span class="mt">Warum?</span><span class="mq">?</span></button>
@@ -1550,6 +1740,22 @@ function bind() {
   $('#ctx').addEventListener('change', e => { settings.context = e.target.checked; save(); });
   $('#noise').addEventListener('change', e => { settings.noise = e.target.checked; save(); if (!settings.noise) stopNoise(); });
   $('#zh').addEventListener('change', e => { settings.zh = e.target.checked; save(); renderSettings(); });
+  $('#preview').addEventListener('click', () => {
+    const region = settings.region === 'mix' ? (chance(.5) ? 'AT' : 'DE') : settings.region;
+    const v = chooseVoice(region);
+    const at = v ? vRegion(v) === 'AT' : region === 'AT';
+    const text = at
+      ? 'Servus! Treffen wir uns um viertel acht? Meine Nummer ist null sechs sechs vier, zwölf, vierunddreißig, sechsundfünfzig.'
+      : 'Hallo! Treffen wir uns um Viertel nach sieben? Meine Nummer ist null eins sieben eins, zwölf, vierunddreißig, sechsundfünfzig.';
+    speak(text, v ? v.voiceURI : null, settings.rate, 1);
+    $('#previewInfo').textContent = v ? `${v.name} (${v.lang})` : 'Standardstimme des Browsers';
+  });
+  const openRules = () => { $('#rulesModal').hidden = false; $('#rulesClose').focus(); };
+  const closeRules = () => { $('#rulesModal').hidden = true; $('#rulesBtn').focus(); };
+  $('#rulesBtn').addEventListener('click', openRules);
+  $('#rulesClose').addEventListener('click', closeRules);
+  $('#rulesModal').addEventListener('click', e => { if (e.target.id === 'rulesModal') closeRules(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#rulesModal').hidden) closeRules(); });
   $('#sfx').addEventListener('change', e => { settings.sfx = e.target.checked; save(); sfx('ok'); });
   $('#clearHs').addEventListener('click', () => {
     const b = $('#clearHs');
@@ -1582,7 +1788,7 @@ function bind() {
   } else renderVoiceSelect();
 }
 
-window.__zahlenohr = { GEN, pointsFor, current: () => cur() };
+window.__zahlenohr = { GEN, pointsFor, digitMarks, current: () => cur() };
 load();
 renderSettings();
 renderStart();
