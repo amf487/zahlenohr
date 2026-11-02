@@ -1,3 +1,16 @@
+// Version number in the bottom-right corner.
+.app-version {
+  position: fixed;
+  right: max(10px, env(safe-area-inset-right, 0px));
+  bottom: max(6px, env(safe-area-inset-bottom, 0px));
+  z-index: 5;
+  pointer-events: none;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  color: var(--muted);
+  opacity: 0.6;
+}
+
 // Confetti for a new record (pieces are created in src/ui/fx.ts).
 .confetti {
   position: fixed;

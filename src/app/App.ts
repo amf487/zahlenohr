@@ -71,7 +71,8 @@ export class App {
 
     const shell = el('<div class="app"></div>');
     shell.append(this.header, ...Object.values(this.screens).map((s) => s.root));
-    root.append(shell, confettiHost);
+    const version = el(`<div class="app-version" title="Version">v${__APP_VERSION__}</div>`);
+    root.append(shell, confettiHost, version);
 
     q(this.header, '[data-ref="home"]').addEventListener('click', () => {
       if (this.current === 'game') return;

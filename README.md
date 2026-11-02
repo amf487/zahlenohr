@@ -58,6 +58,14 @@ tests/
 
 See [docs/architecture.md](docs/architecture.md) for how the parts fit together and **how to add a new quiz type**, including quizzes that are not about numbers.
 
+## Versioning
+
+The version from `package.json` is shown in the bottom-right corner of the app. Bump it with every change and note it in [CHANGELOG.md](CHANGELOG.md):
+
+```bash
+npm version patch --no-git-tag-version   # fixes; use minor for new features, major for big changes
+```
+
 ## Deployment
 
 Pushes to `main` are built and deployed to GitHub Pages by `.github/workflows/deploy.yml`. In the repository settings, set **Pages → Source** to **GitHub Actions** once. `.github/workflows/ci.yml` runs all checks and tests on every push and pull request.

@@ -49,6 +49,10 @@ async function fitsWithoutScrolling(page: Page) {
   expect(size.w).toBeLessThanOrEqual(1440);
 }
 
+test('shows the version from package.json', async ({ page }) => {
+  await expect(page.locator('.app-version')).toHaveText(/^v\d+\.\d+\.\d+$/);
+});
+
 test('plays a full round and saves the high score', async ({ page }) => {
   await page.click('[data-mode="mix"]');
   await page.click('[data-difficulty="hard"]');
