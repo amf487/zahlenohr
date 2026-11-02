@@ -3,6 +3,10 @@
 The version is shown in the bottom-right corner of the app. Bump it with every change
 (`npm version patch|minor|major --no-git-tag-version`) and add an entry here.
 
+## 2.1.1
+
+- Fixed: the settings tooltip was hidden behind the high score card
+
 ## 2.1.0
 
 - Version number in the bottom-right corner

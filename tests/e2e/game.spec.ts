@@ -53,6 +53,21 @@ test('shows the version from package.json', async ({ page }) => {
   await expect(page.locator('.app-version')).toHaveText(/^v\d+\.\d+\.\d+$/);
 });
 
+test('settings tooltip is shown above the cards', async ({ page }) => {
+  // make the tooltip hit-testable, so elementFromPoint can see it
+  await page.addStyleTag({ content: '.tip::after { pointer-events: auto !important; }' });
+  const button = page.locator('[data-ref="settings"]');
+  await button.hover();
+  await page.waitForTimeout(250);
+  // the tooltip hangs below the button; whatever is drawn there must be the button's tooltip
+  const box = (await button.boundingBox())!;
+  const topElement = await page.evaluate(
+    ([x, y]) => document.elementFromPoint(x!, y!)?.closest('[data-ref="settings"]') != null,
+    [box.x + box.width - 20, box.y + box.height + 24],
+  );
+  expect(topElement).toBe(true);
+});
+
 test('plays a full round and saves the high score', async ({ page }) => {
   await page.click('[data-mode="mix"]');
   await page.click('[data-difficulty="hard"]');
