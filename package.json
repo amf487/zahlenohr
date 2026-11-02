@@ -1,6 +1,6 @@
 {
   "name": "zahlenohr",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "private": true,
   "description": "Listening game for German numbers, times, phone numbers, prices and dates, in German, Austrian and Swiss variants.",
   "type": "module",

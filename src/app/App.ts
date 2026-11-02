@@ -9,6 +9,7 @@ import { SettingsStore } from '@/services/settings';
 import { SpeechService } from '@/services/speech';
 import { el, q } from '@/ui/dom';
 import { ICONS, svg } from '@/ui/icons';
+import { LOGO_SVG } from '@/ui/logo';
 import { StartScreen } from '@/ui/screens/StartScreen';
 import { GameScreen } from '@/ui/screens/GameScreen';
 import { ResultScreen } from '@/ui/screens/ResultScreen';
@@ -25,7 +26,7 @@ export class App {
   private previous: ScreenName = 'start';
   private readonly header = el(`
     <header class="header">
-      <button class="header__brand" type="button" data-ref="home"><span class="header__logo">12</span>Zahlenohr <span class="zh">德语数字听力</span></button>
+      <button class="header__brand" type="button" data-ref="home"><span class="header__logo">${LOGO_SVG}</span>Zahlenohr <span class="zh">德语数字听力</span></button>
       <button class="btn btn--icon tip tip--below" type="button" data-ref="settings" aria-label="Einstellungen" data-tip="Einstellungen">${svg(ICONS.settings)}</button>
     </header>`);
 

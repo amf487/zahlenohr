@@ -80,13 +80,11 @@ export class StartScreen implements Screen {
 
   private render(): void {
     const { mode, difficulty, chinese } = this.ctx.settings.current;
-    // A photo at public/img/<mode>.jpg is used as card background when present; otherwise the illustration shows.
     q(this.root, '[data-ref="modes"]').innerHTML = this.ctx.modes
       .map(
         (
           m,
         ) => `<button type="button" class="mode-card" data-mode="${m.id}" style="${modeStyle(m.colors)}" aria-pressed="${mode === m.id}">
-          <img class="mode-card__photo" src="img/${m.id}.jpg" alt="" onerror="this.nextElementSibling.remove();this.remove()"><span class="mode-card__shade"></span>
           ${svg(m.icon, 'mode-card__art')}
           <span class="mode-card__title">${bi(m.label.de, m.label.zh)}</span>
         </button>`,

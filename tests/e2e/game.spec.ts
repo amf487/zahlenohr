@@ -49,6 +49,17 @@ async function fitsWithoutScrolling(page: Page) {
   expect(size.w).toBeLessThanOrEqual(1440);
 }
 
+test('loads without failed requests and shows the logo', async ({ page }) => {
+  const failed: string[] = [];
+  page.on('response', (r) => r.status() >= 400 && failed.push(`${r.status()} ${r.url()}`));
+  await page.goto('/');
+  await page.waitForLoadState('networkidle');
+  expect(failed.filter((u) => !u.includes('fonts.g'))).toEqual([]);
+  await expect(page.locator('.header__logo svg path')).toHaveCount(3);
+  const icon = await page.request.get('favicon.svg');
+  expect(icon.ok()).toBe(true);
+});
+
 test('shows the version from package.json', async ({ page }) => {
   await expect(page.locator('.app-version')).toHaveText(/^v\d+\.\d+\.\d+$/);
 });

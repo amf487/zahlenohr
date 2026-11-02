@@ -39,9 +39,11 @@
     background: linear-gradient(135deg, var(--gold), var(--gold-2));
     color: #2a1a00;
     box-shadow: 0 3px 0 var(--gold-deep);
-    font-family: var(--f-mono);
-    font-style: normal;
-    font-size: 15px;
-    font-weight: 800;
+
+    svg {
+      width: 24px;
+      height: 24px;
+      fill: #2a1a00;
+    }
   }
 }

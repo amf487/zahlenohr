@@ -3,6 +3,11 @@
 The version is shown in the bottom-right corner of the app. Bump it with every change
 (`npm version patch|minor|major --no-git-tag-version`) and add an entry here.
 
+## 2.2.0
+
+- New logo and browser icon (ear with sound waves), also as home-screen icon on iPhone
+- Removed the unused photo slots on the mode cards (no more 404 errors)
+
 ## 2.1.1
 
 - Fixed: the settings tooltip was hidden behind the high score card
