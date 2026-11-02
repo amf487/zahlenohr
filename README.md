@@ -13,14 +13,14 @@ Open `index.html` in a browser, pick a mode and a difficulty, and press **Spiel 
 - **Arcade style:** circular points timer, score pop-ups, star rating (3,000 / 5,500 / 8,000 points), confetti for a new record and short sound effects (can be switched off in the settings)
 - **Typed answers are forgiving:** spaces and `-` are ignored, `+43` and `0043` count the same, dates can be typed as `23.3.`, `23. März`, `23 Jänner` or `3月23日`, and a 12-hour time for a 24-hour answer (`7:30` for `19:30`) counts but shows a warning
 - **After each answer** the board marks every digit green (heard right), red (wrong, with the typed digit shown small) or gold (12-hour form)
-- **About 190 sentence templates** (shared, Austrian and German ones) plus short openers, and recently used sentences are not repeated
+- **Over 200 sentence templates** (shared, Austrian, German and Swiss ones; the settings page shows the exact count per exercise and region) plus short openers, and recently used sentences are not repeated
 - **Results** show the points for each question with the spoken sentence and an explanation; the best scores per mode and difficulty are kept in a high score list
 - **Modes:** Uhrzeit, Telefon, Zahlen, Preise, Datum, Mix
-- **Regions:** German or Austrian phrasing, or a mix of both (e.g. *viertel acht*, *in der Früh*, *Jänner*, *Des macht dann …* vs. *Viertel nach sieben*, *zwo*)
-- **Phone numbers** come in real Austrian/German formats (0664, 01, 030, +43, extensions) and are read as single digits, pairs, triples or mixed blocks
+- **Regions:** German, Austrian or Swiss phrasing, or a mix (e.g. *viertel acht*, *in der Früh*, *Jänner*, *Des macht dann …* vs. *Viertel nach sieben*, *zwo* vs. *Natelnummer*, *Billett*, prices in Franken and Rappen)
+- **Phone numbers** come in real Austrian, German and Swiss formats (0664, 01, 030, 079, 044, +43/+49/+41, extensions) and are read as single digits, pairs, triples or mixed blocks
 - **Wrong options are typical traps:** 43 vs 34, sechzehn vs sechzig, *halb acht* = 7:30 (not 8:30), Juni vs Juli
 - After each answer: the spoken sentence, a word-to-digit breakdown, and hints in German and Chinese (can be switched off)
-- Settings page: region, voice (with a preview button), speech rate, sound effects, full sentences or only the number, optional station background noise, Chinese hints
+- Settings page: region, voice (with a preview/stop button and, in Edge, a mode that rotates through all Microsoft voices), speech rate, sound effects, full sentences or only the number, optional station background noise, Chinese hints
 
 ## Voices
 
@@ -31,7 +31,3 @@ The app uses the browser's built-in speech synthesis (Web Speech API), so the vo
 - If nothing plays, install a German voice in the system's language/speech settings.
 
 Settings and high scores are stored in the browser's `localStorage`.
-
-## Photos on the mode cards
-
-The mode cards on the start screen use illustrations. To use photos instead, add them as `img/time.jpg`, `img/phone.jpg`, `img/number.jpg`, `img/price.jpg`, `img/date.jpg` and `img/mix.jpg` (landscape, about 600 × 400 px). Cards without a photo keep their illustration. Only use photos you are allowed to use, for example from Unsplash or Pexels.
