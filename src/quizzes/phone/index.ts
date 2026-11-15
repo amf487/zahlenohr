@@ -148,6 +148,10 @@ export const phoneQuiz: QuizModule = {
   icon: '<rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18h2"/>',
   colors: ['#22E0B4', '#0B8C78'],
   boardPlaceholder: '---- --- ----',
+  // Long digit strings: a bit slower than other quizzes, and a gentler "Langsam" step
+  // (normal ≈ 0.9×, slow ≈ 0.77× instead of 1× and 0.7×).
+  speechRate: 0.9,
+  slowRate: 0.85,
   generate,
   sentenceBank: (region) => [...PHONE[region], ...CITY],
 };

@@ -65,6 +65,10 @@ export interface QuizModule {
   boardPlaceholder: string;
   /** Characters of the answer that are compared on the board (default: digits). */
   markPattern?: RegExp;
+  /** Speech rate multiplier for this quiz, on top of settings and difficulty (default 1). */
+  speechRate?: number;
+  /** Rate multiplier for the "Langsam" replay, relative to the normal rate (default 0.7). */
+  slowRate?: number;
   generate(region: RegionId): QuestionDraft;
   /** Every sentence template the quiz can use in a region, for the overview in the settings. */
   sentenceBank(region: RegionId): readonly string[];

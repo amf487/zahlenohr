@@ -135,7 +135,7 @@ export class GameScreen implements Screen {
       question,
       voice: {
         voiceURI: voice?.voiceURI ?? null,
-        rate: s.rate * difficulty.rate * (1 + (random() - 0.5) * 0.08),
+        rate: s.rate * difficulty.rate * (quiz.speechRate ?? 1) * (1 + (random() - 0.5) * 0.08),
         pitch: 0.94 + random() * 0.12,
       },
       input: chance(difficulty.typedShare) ? 'typed' : 'choice',
@@ -205,7 +205,7 @@ export class GameScreen implements Screen {
     const item = round?.current;
     if (!round || !item) return;
     this.ref('playLabel').innerHTML = bi('Nochmal', '再听');
-    const voice = { ...item.voice, rate: item.voice.rate * (slow ? 0.7 : 1) };
+    const voice = { ...item.voice, rate: item.voice.rate * (slow ? (item.question.quiz.slowRate ?? 0.7) : 1) };
     this.ctx.say(item.question.text, voice, () => {
       // The clock starts when the sentence has been read out the first time.
       if (round.current === item && round.startClock(performance.now())) {

@@ -3,6 +3,10 @@
 The version is shown in the bottom-right corner of the app. Bump it with every change
 (`npm version patch|minor|major --no-git-tag-version`) and add an entry here.
 
+## 2.3.0
+
+- Phone numbers: normal speed is a bit slower, and "Langsam" is less slow (now about 0.9× and 0.77× instead of 1× and 0.7×)
+
 ## 2.2.0
 
 - New logo and browser icon (ear with sound waves), also as home-screen icon on iPhone
